@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Eye, EyeOff, ArrowRight, Gift, Truck } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Gift, Truck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import Logo from '../components/Logo';
 
 const Register = () => {
   const { register, isAuthenticated, loading: authLoading } = useAuth();
@@ -36,7 +37,7 @@ const Register = () => {
   return (
     <div className="auth-page">
       <div className="auth-visual auth-visual--register">
-        <Link to="/" className="brand brand--light"><span className="brand__mark"><ShoppingBag size={22} /></span><span className="brand__text">Gura<span>Neza</span><small>Kigali · Rwanda</small></span></Link>
+        <Logo wide />
         <div className="auth-visual__content">
           <span className="eyebrow eyebrow--light">Join the family</span>
           <h2>Great shopping starts right here.</h2>

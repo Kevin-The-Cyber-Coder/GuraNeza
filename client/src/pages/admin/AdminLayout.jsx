@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
-  ShoppingBag, LayoutDashboard, Package, ShoppingCart, Mail, LogOut,
+  LayoutDashboard, Package, ShoppingCart, Mail, LogOut,
   Menu, X, ExternalLink, Bell, Search,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import Logo from '../../components/Logo';
 
 const navItems = [
   { to: '/admin', label: 'Overview', icon: LayoutDashboard, end: true },
@@ -27,10 +28,7 @@ const AdminLayout = ({ children }) => {
     <div className="admin-layout">
       <aside className={`admin-sidebar ${sidebarOpen ? 'admin-sidebar--open' : ''}`}>
         <div className="admin-sidebar__brand">
-          <Link to="/admin" className="brand brand--light">
-            <span className="brand__mark"><ShoppingBag size={21} /></span>
-            <span className="brand__text">Gura<span>Neza</span><small>Admin console</small></span>
-          </Link>
+          <Logo to="/admin" />
           <button className="admin-sidebar__close" onClick={() => setSidebarOpen(false)}><X size={20} /></button>
         </div>
 
