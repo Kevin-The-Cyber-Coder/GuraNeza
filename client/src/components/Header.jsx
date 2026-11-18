@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import Logo from './Logo';
 
 const links = [
   { to: '/', label: 'Home', end: true },
@@ -67,10 +68,7 @@ const Header = () => {
       </div>
       <header className={`site-header ${scrolled ? 'site-header--scrolled' : ''}`}>
         <div className="container site-header__inner">
-          <Link to="/" className="brand" aria-label="GuraNeza home">
-            <span className="brand__mark"><ShoppingBag size={22} strokeWidth={2.4} /></span>
-            <span className="brand__text">Gura<span>Neza</span><small>Kigali · Rwanda</small></span>
-          </Link>
+          <Logo />
 
           <nav className="desktop-nav" aria-label="Main navigation">
             {links.map((link) => (

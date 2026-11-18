@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
-import { ShoppingBag, MapPin, Phone, Mail, Instagram, Facebook, Twitter, ArrowRight } from 'lucide-react';
+import { MapPin, Phone, Mail, Instagram, Facebook, Twitter, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '../context/ToastContext';
+import Logo from './Logo';
 
 const Footer = () => {
   const [email, setEmail] = useState('');
@@ -18,10 +19,7 @@ const Footer = () => {
     <footer className="site-footer">
       <div className="container footer-top">
         <div className="footer-brand">
-          <Link to="/" className="brand brand--light">
-            <span className="brand__mark"><ShoppingBag size={22} /></span>
-            <span className="brand__text">Gura<span>Neza</span><small>Kigali · Rwanda</small></span>
-          </Link>
+          <Logo wide />
           <p>
             Your trusted neighbourhood shop for quality products at fair prices.
             From everyday essentials to something special — we bring good things closer to you.
