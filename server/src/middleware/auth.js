@@ -1,6 +1,20 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
+const DEV_SECRET = 'guraneza_dev_secret_change_me';
+
+/** In production the signing key must come from the hosting environment (Render). */
+const getJwtSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('JWT_SECRET is missing. Set it in the Render service environment.');
+    }
+    return DEV_SECRET;
+  }
+  return secret;
+};
+
 const getToken = (req) => {
   const header = req.headers.authorization || '';
   if (header.startsWith('Bearer ')) return header.split(' ')[1];
@@ -15,7 +29,7 @@ export const protect = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Not authorized, no token provided' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'guraneza_super_secret_key_change_me_in_production');
+    const decoded = jwt.verify(token, getJwtSecret());
     const user = await User.findById(decoded.id).select('-password');
 
     if (!user) return res.status(401).json({ success: false, message: 'User no longer exists' });
@@ -36,6 +50,6 @@ export const adminOnly = (req, res, next) => {
 
 /** Generates a signed JWT for a user id. */
 export const generateToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET || 'guraneza_super_secret_key_change_me_in_production', {
-    expiresIn: '30d',
+  jwt.sign({ id }, getJwtSecret(), {
+    expiresIn: process.env.JWT_EXPIRES_IN || '30d',
   });

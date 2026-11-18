@@ -13,13 +13,29 @@ dotenv.config();
 
 const app = express();
 
+// Render runs the API behind a proxy; this lets Express report the real scheme/host.
+app.set('trust proxy', 1);
+
+const defaultOrigins = [
+  'http://localhost:5173',
+  'https://guraneza-ja1a.onrender.com',
+];
+const configuredOrigins = (process.env.CLIENT_URL || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const allowedOrigins = [...new Set([...defaultOrigins, ...configuredOrigins])];
+const isLocalOrigin = (origin) => /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+
 // Middleware
 app.use(
   cors({
     origin: (origin, callback) => {
-      const allowed = process.env.CLIENT_URL || 'http://localhost:5173';
-      if (!origin || origin === allowed || allowed === '*') return callback(null, true);
-      return callback(null, true); // allow local network devices too
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes('*') || allowedOrigins.includes(origin) || isLocalOrigin(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`Origin ${origin} is not allowed by CORS`));
     },
     credentials: true,
   })

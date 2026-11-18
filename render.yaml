@@ -1,0 +1,30 @@
+# Render Blueprint for the GuraNeza API.
+# The frontend is already hosted at https://guraneza-ja1a.onrender.com/.
+services:
+  - type: web
+    name: guraneza-api
+    runtime: node
+    region: frankfurt
+    plan: free
+    rootDir: server
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 30d
+      - key: CLIENT_URL
+        value: https://guraneza-ja1a.onrender.com
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_NAME
+        value: GuraNeza Admin
