@@ -144,11 +144,12 @@ The frontend is hosted as a Render Static Site at <https://guraneza-ja1a.onrende
 
 1. In Render, create a **Blueprint** from this repository. It will create the `guraneza-api` web service using `render.yaml`.
 2. When prompted, fill in `MONGO_URI`, `ADMIN_EMAIL` and `ADMIN_PASSWORD`. `JWT_SECRET` is generated automatically and must never be committed.
-3. After the API deploys, copy its `onrender.com` URL and set this environment variable on the **frontend Static Site**:
+3. The frontend is already wired to the API through `client/.env.production`, which sets:
    ```
-   VITE_API_URL=https://<your-backend-service>.onrender.com/api
+   VITE_API_URL=https://guraneza-api.onrender.com/api
    ```
-4. Redeploy the frontend. The API already allows the frontend origin through CORS via `CLIENT_URL`.
+   You can also set this variable on the **frontend Static Site** in Render to override it without a code change.
+4. Redeploy the frontend so Vite rebuilds with that URL. The API already allows the frontend origin through CORS via `CLIENT_URL`.
 
 JWT tokens expire using UTC time (`JWT_EXPIRES_IN`, default `30d`) and are verified with the server-side secret from the environment. `client/public/_redirects` makes React Router deep links work on the static site.
 
