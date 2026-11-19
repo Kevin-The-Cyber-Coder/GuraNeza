@@ -136,6 +136,16 @@ Signing in as admin redirects to `/admin`.
 
 All protected routes expect `Authorization: Bearer <token>`.
 
+### API testing (Postman)
+
+Ready-to-import Postman artifacts and a live test report are in [`postman/`](postman/README.md):
+
+- `GuraNeza.postman_collection.json` — 30 requests with `pm.test()` assertions
+- `GuraNeza.postman_environment.json` — `GuraNeza Live` environment (base URL + variables)
+- `api-test-report.html` — browser view of the actual live test results
+
+Import the collection and environment into Postman, select the **GuraNeza Live** environment, then click **Run** to see PASS/FAIL results for each API.
+
 ---
 
 ## 🌐 Deployment (Render)
@@ -150,8 +160,9 @@ The frontend is hosted as a Render Static Site at <https://guraneza-ja1a.onrende
    ```
    You can also set this variable on the **frontend Static Site** in Render to override it without a code change.
 4. Redeploy the frontend so Vite rebuilds with that URL. The API already allows the frontend origin through CORS via `CLIENT_URL`.
+5. **Enable the SPA rewrite rule.** Render Static Sites ignore `client/public/_redirects`, so direct URLs such as `/register` return a plain "Not Found" page. In the Render Dashboard, open the frontend Static Site → **Settings** → **Redirects/Rewrites** → add a rule with **Type: Rewrite**, **Source: `/*`**, **Destination: `/index.html`**, then save. Alternatively, sync the `guraneza-ja1a` static-site entry in `render.yaml`, which already defines this rule.
 
-JWT tokens expire using UTC time (`JWT_EXPIRES_IN`, default `30d`) and are verified with the server-side secret from the environment. `client/public/_redirects` makes React Router deep links work on the static site.
+JWT tokens expire using UTC time (`JWT_EXPIRES_IN`, default `30d`) and are verified with the server-side secret from the environment.
 
 ## 💾 Git workflow
 

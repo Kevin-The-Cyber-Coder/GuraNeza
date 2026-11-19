@@ -28,3 +28,19 @@ services:
         sync: false
       - key: ADMIN_NAME
         value: GuraNeza Admin
+
+  # Frontend Static Site. The name must match the existing service in Render.
+  # The rewrite rule makes React Router deep links (/register, /login, /shop) work.
+  - type: web
+    name: guraneza-ja1a
+    runtime: static
+    branch: main
+    buildCommand: npm install --prefix client && npm run build --prefix client
+    staticPublishPath: ./client/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://guraneza-api.onrender.com/api
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
