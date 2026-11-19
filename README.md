@@ -160,7 +160,7 @@ The frontend is hosted as a Render Static Site at <https://guraneza-ja1a.onrende
    ```
    You can also set this variable on the **frontend Static Site** in Render to override it without a code change.
 4. Redeploy the frontend so Vite rebuilds with that URL. The API already allows the frontend origin through CORS via `CLIENT_URL`.
-5. **Enable the SPA rewrite rule.** Render Static Sites ignore `client/public/_redirects`, so direct URLs such as `/register` return a plain "Not Found" page. In the Render Dashboard, open the frontend Static Site → **Settings** → **Redirects/Rewrites** → add a rule with **Type: Rewrite**, **Source: `/*`**, **Destination: `/index.html`**, then save. Alternatively, sync the `guraneza-ja1a` static-site entry in `render.yaml`, which already defines this rule.
+5. **Enable the SPA rewrite rule.** Render Static Sites ignore `client/public/_redirects`, so direct URLs such as `/register` return a plain "Not Found" page. In the Render Dashboard, open the frontend Static Site → **Settings** → **Redirects/Rewrites** → add a rule with **Type: Rewrite**, **Source: `/*`**, **Destination: `/index.html`**, then save. Choose **Rewrite**, not Redirect: a redirect changes the address to `/index.html`, which React Router does not recognise and renders as its 404 page. Alternatively, sync the `guraneza-ja1a` static-site entry in `render.yaml`, which already defines a rewrite rule.
 
 JWT tokens expire using UTC time (`JWT_EXPIRES_IN`, default `30d`) and are verified with the server-side secret from the environment.
 
