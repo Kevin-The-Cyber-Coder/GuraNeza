@@ -18,6 +18,7 @@ const Register = () => {
   const setField = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
   const submit = async (e) => {
+    e.preventDefault();
     if (form.password !== form.confirmPassword) {
       toast('Passwords do not match', 'error');
       return;
