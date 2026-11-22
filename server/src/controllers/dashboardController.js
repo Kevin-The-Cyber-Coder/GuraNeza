@@ -29,7 +29,7 @@ export const getDashboardStats = asyncHandler(async (_req, res) => {
         },
       },
     ]),
-    User.countDocuments({ role: 'user' }),
+    User.countDocuments({ role: 'customer' }),
     Contact.countDocuments({ status: 'New' }),
   ]);
 

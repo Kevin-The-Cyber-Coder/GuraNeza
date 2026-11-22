@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import { generateToken } from '../middleware/auth.js';
 import { asyncHandler } from '../middleware/error.js';
+import { validatePasswordStrength } from '../utils/password.js';
 
 const sanitize = (user) => ({
   _id: user._id,
@@ -11,13 +12,15 @@ const sanitize = (user) => ({
   address: user.address || '',
   role: user.role,
   avatar: user.avatar || '',
+  isActive: user.isActive,
+  createdAt: user.createdAt,
 });
 
 const validateRegistration = ({ name, email, password }) => {
   const errors = [];
   if (!name || name.trim().length < 2) errors.push('Please provide a valid name');
   if (!email || !/^\S+@\S+\.\S+$/.test(email)) errors.push('Please provide a valid email');
-  if (!password || password.length < 6) errors.push('Password must be at least 6 characters');
+  errors.push(...validatePasswordStrength(password));
   return errors;
 };
 
@@ -38,7 +41,7 @@ export const register = asyncHandler(async (req, res) => {
     password,
     phone: phone || '',
     address: address || '',
-    role: 'user', // admins are created only by the seed script / existing admins
+    role: 'customer', // sellers are created only through the approval workflow
   });
 
   await User.findByIdAndUpdate(user._id, { lastLogin: new Date() });
@@ -66,7 +69,13 @@ export const login = asyncHandler(async (req, res) => {
     return res.status(401).json({ success: false, message: 'Invalid email or password' });
   }
   if (!user.isActive) {
-    return res.status(403).json({ success: false, message: 'This account has been disabled' });
+    return res.status(403).json({
+      success: false,
+      message:
+        user.role === 'seller'
+          ? 'Your seller account is not active yet. Please use the activation link sent to your email.'
+          : 'This account has been disabled',
+    });
   }
 
   await User.findByIdAndUpdate(user._id, { lastLogin: new Date() });
@@ -101,8 +110,9 @@ export const updateProfile = asyncHandler(async (req, res) => {
     if (!currentPassword || !(await user.matchPassword(currentPassword))) {
       return res.status(400).json({ success: false, message: 'Current password is incorrect' });
     }
-    if (password.length < 6) {
-      return res.status(400).json({ success: false, message: 'New password must be at least 6 characters' });
+    const passwordErrors = validatePasswordStrength(password);
+    if (passwordErrors.length) {
+      return res.status(400).json({ success: false, message: passwordErrors.join('. ') });
     }
     user.password = password;
   }
