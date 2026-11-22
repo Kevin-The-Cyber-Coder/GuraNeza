@@ -7,6 +7,8 @@ import productRoutes from './routes/productRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import sellerApplicationRoutes from './routes/sellerApplicationRoutes.js';
+import sellerInvitationRoutes from './routes/sellerInvitationRoutes.js';
 import errorHandler from './middleware/error.js';
 import { apiLimiter, securityHeaders } from './middleware/security.js';
 
@@ -61,6 +63,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/seller-applications', sellerApplicationRoutes);
+app.use('/api/seller-invitations', sellerInvitationRoutes);
 
 // 404 handler
 app.use('/api', (_req, res) => {
