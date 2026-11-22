@@ -1,11 +1,14 @@
-import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Product from '../models/Product.js';
 import Order from '../models/Order.js';
 import Contact from '../models/Contact.js';
+import env, { isProd } from '../config/env.js';
 
-dotenv.config();
+if (isProd) {
+  console.error('[Seed] Refusing to run in production. Use explicit migrations instead.');
+  process.exit(1);
+}
 
 const img = (id) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=900&q=80`;
 
@@ -238,7 +241,7 @@ const PRODUCTS = [
 
 const seed = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/guraneza');
+    await mongoose.connect(env.MONGO_URI);
     console.log('[Seed] Connected to MongoDB');
 
     // Keep the database idempotent by clearing existing data (dev only).
@@ -247,7 +250,7 @@ const seed = async () => {
       Order.deleteMany({}),
       Contact.deleteMany({}),
       User.deleteMany({ email: { $in: [
-        (process.env.ADMIN_EMAIL || 'admin@guraneza.rw').toLowerCase(),
+        env.ADMIN_EMAIL.toLowerCase(),
         'demo@guraneza.rw',
       ] } }),
     ]);
@@ -255,9 +258,9 @@ const seed = async () => {
 
     // Admin account
     const admin = await User.create({
-      name: process.env.ADMIN_NAME || 'GuraNeza Admin',
-      email: (process.env.ADMIN_EMAIL || 'admin@guraneza.rw').toLowerCase(),
-      password: process.env.ADMIN_PASSWORD || 'Admin@123',
+      name: env.ADMIN_NAME,
+      email: env.ADMIN_EMAIL.toLowerCase(),
+      password: env.ADMIN_PASSWORD,
       role: 'admin',
       phone: '+250 788 000 000',
       address: 'Kigali, Rwanda',
@@ -268,7 +271,7 @@ const seed = async () => {
       name: 'Demo Customer',
       email: 'demo@guraneza.rw',
       password: 'Demo@123',
-      role: 'user',
+      role: 'customer',
       phone: '+250 788 123 456',
       address: 'Gasabo District, Kigali',
     });
