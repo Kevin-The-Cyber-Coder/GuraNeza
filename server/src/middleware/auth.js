@@ -1,27 +1,14 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-
-const DEV_SECRET = 'guraneza_dev_secret_change_me';
-
-/** In production the signing key must come from the hosting environment (Render). */
-const getJwtSecret = () => {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('JWT_SECRET is missing. Set it in the Render service environment.');
-    }
-    return DEV_SECRET;
-  }
-  return secret;
-};
+import env from '../config/env.js';
 
 const getToken = (req) => {
   const header = req.headers.authorization || '';
-  if (header.startsWith('Bearer ')) return header.split(' ')[1];
+  if (header.startsWith('Bearer ')) return header.slice(7).trim();
   return null;
 };
 
-/** Verifies the JWT and attaches the authenticated user to req. */
+/** Verifies the JWT and attaches the authenticated user to req.user. */
 export const protect = async (req, res, next) => {
   try {
     const token = getToken(req);
@@ -29,27 +16,73 @@ export const protect = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Not authorized, no token provided' });
     }
 
-    const decoded = jwt.verify(token, getJwtSecret());
+    const decoded = jwt.verify(token, env.JWT_SECRET);
     const user = await User.findById(decoded.id).select('-password');
 
     if (!user) return res.status(401).json({ success: false, message: 'User no longer exists' });
-    if (!user.isActive) return res.status(403).json({ success: false, message: 'This account has been disabled' });
+    if (!user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message:
+          user.role === 'seller'
+            ? 'Your seller account is not active yet. Please use your activation link.'
+            : 'This account has been disabled',
+      });
+    }
 
     req.user = user;
-    next();
+    return next();
   } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ success: false, message: 'Session expired, please sign in again' });
+    }
     return res.status(401).json({ success: false, message: 'Invalid or expired token' });
   }
 };
 
-/** Restricts a route to administrators only. */
-export const adminOnly = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') return next();
-  return res.status(403).json({ success: false, message: 'Admin access required' });
+/**
+ * Restricts a route to one or more roles.
+ * Always use this on the server; client-side guards are presentation only.
+ *
+ * @example router.get('/admin', protect, authorize('admin'), handler)
+ */
+export const authorize =
+  (...roles) =>
+  (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to perform this action',
+      });
+    }
+    return next();
+  };
+
+export const adminOnly = authorize('admin');
+export const sellerOnly = authorize('seller');
+export const customerOnly = authorize('customer');
+
+/** Allows admins and the owner of a resource; denies everyone else. */
+export const ownerOrAdmin = (getOwnerId) => (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, message: 'Not authorized' });
+  }
+  if (req.user.role === 'admin') return next();
+
+  const ownerId = typeof getOwnerId === 'function' ? getOwnerId(req) : getOwnerId;
+  if (ownerId && String(ownerId) === String(req.user._id)) return next();
+
+  return res.status(403).json({
+    success: false,
+    message: 'You are not allowed to access this resource',
+  });
 };
 
 /** Generates a signed JWT for a user id. */
 export const generateToken = (id) =>
-  jwt.sign({ id }, getJwtSecret(), {
-    expiresIn: process.env.JWT_EXPIRES_IN || '30d',
+  jwt.sign({ id }, env.JWT_SECRET, {
+    expiresIn: env.JWT_EXPIRES_IN,
   });

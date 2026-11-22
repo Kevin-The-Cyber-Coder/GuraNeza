@@ -8,10 +8,34 @@
     "start": "concurrently -n SERVER,CLIENT -c green,cyan \"npm start --prefix server\" \"npm run preview --prefix client\"",
     "install:all": "npm install && npm install --prefix server && npm install --prefix client",
     "seed": "npm run seed --prefix server",
-    "setup": "npm run install:all && npm run seed"
+    "setup": "npm run install:all && npm run seed",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run test:server",
+    "test:server": "npm run test --prefix server",
+    "build": "npm run build:client",
+    "build:client": "npm run build --prefix client",
+    "git:status": "node scripts/git-status.mjs",
+    "git:sync": "node scripts/git-sync.mjs",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "server/**/*.js": "eslint --fix",
+    "client/**/*.{js,jsx}": "eslint --fix"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "@eslint/js": "^9.39.0",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.39.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.14.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.10.1"
   },
   "engines": {
     "node": ">=18"

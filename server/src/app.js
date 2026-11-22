@@ -1,15 +1,14 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 
+import env from './config/env.js';
 import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import errorHandler from './middleware/error.js';
-
-dotenv.config();
+import { apiLimiter, securityHeaders } from './middleware/security.js';
 
 const app = express();
 
@@ -20,14 +19,15 @@ const defaultOrigins = [
   'http://localhost:5173',
   'https://guraneza-ja1a.onrender.com',
 ];
-const configuredOrigins = (process.env.CLIENT_URL || '')
-  .split(',')
+const configuredOrigins = env.CLIENT_URL.split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
+if (env.APP_URL) configuredOrigins.push(env.APP_URL);
 const allowedOrigins = [...new Set([...defaultOrigins, ...configuredOrigins])];
 const isLocalOrigin = (origin) => /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 
 // Middleware
+app.use(securityHeaders);
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -42,6 +42,7 @@ app.use(
 );
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use('/api', apiLimiter);
 
 // API health check
 app.get('/api/health', (_req, res) => {

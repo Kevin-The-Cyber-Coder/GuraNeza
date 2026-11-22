@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+export const USER_ROLES = ['customer', 'seller', 'admin'];
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -20,7 +22,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, 'Please provide a password'],
-      minlength: [6, 'Password must be at least 6 characters'],
+      minlength: [8, 'Password must be at least 8 characters'],
       select: false,
     },
     phone: {
@@ -35,8 +37,12 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['user', 'admin'],
-      default: 'user',
+      enum: {
+        values: USER_ROLES,
+        message: '{VALUE} is not a valid role',
+      },
+      default: 'customer',
+      index: true,
     },
     avatar: {
       type: String,
@@ -45,6 +51,13 @@ const userSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+      index: true,
+    },
+    emailVerifiedAt: {
+      type: Date,
+    },
+    passwordChangedAt: {
+      type: Date,
     },
     lastLogin: {
       type: Date,
@@ -53,11 +66,14 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+userSchema.index({ role: 1, isActive: 1 });
+
 // Hash the password before saving when it was changed / newly set.
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  this.passwordChangedAt = new Date();
   next();
 });
 
@@ -65,10 +81,19 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
 };
 
-// Never expose the password hash in JSON responses.
+userSchema.methods.isSeller = function () {
+  return this.role === 'seller';
+};
+
+userSchema.methods.isAdmin = function () {
+  return this.role === 'admin';
+};
+
+// Never expose the password hash or internal bookkeeping in JSON responses.
 userSchema.set('toJSON', {
   transform: (_doc, ret) => {
     delete ret.password;
+    delete ret.passwordChangedAt;
     delete ret.__v;
     return ret;
   },
