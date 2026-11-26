@@ -1,6 +1,7 @@
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import { asyncHandler } from '../middleware/error.js';
+import { hasRole, ROLES } from '../config/rbac.js';
 
 const VALID_STATUSES = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
 const SHIPPING_FEE = 2000; // 2,000 RWF flat delivery fee inside Kigali
@@ -157,7 +158,7 @@ export const getOrderById = asyncHandler(async (req, res) => {
   if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
 
   const isOwner = order.user && String(order.user._id || order.user) === String(req.user?._id);
-  if (req.user?.role !== 'admin' && !isOwner) {
+  if (!hasRole(req.user, ROLES.SUPER_ADMIN) && !isOwner) {
     return res.status(403).json({ success: false, message: 'Not authorized to view this order' });
   }
   res.json({ success: true, order });

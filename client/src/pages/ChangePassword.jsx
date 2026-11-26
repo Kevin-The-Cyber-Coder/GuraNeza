@@ -16,7 +16,9 @@ const ChangePassword = () => {
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (!user?.mustChangePassword) {
-    const dest = user?.role === 'admin' ? '/admin' : user?.role === 'seller' ? '/seller' : '/';
+    const isAdmin = user?.role === 'admin' || user?.role === 'SUPER_ADMIN';
+    const isSeller = user?.role === 'seller' || user?.role === 'SELLER';
+    const dest = isAdmin ? '/admin' : isSeller ? '/seller' : '/';
     return <Navigate to={dest} replace />;
   }
 
@@ -33,7 +35,9 @@ const ChangePassword = () => {
       });
       updateUser({ ...data.user, mustChangePassword: false });
       toast('Password updated successfully');
-      navigate(user.role === 'admin' ? '/admin' : user.role === 'seller' ? '/seller' : '/', { replace: true });
+      const isAdmin = user.role === 'admin' || user.role === 'SUPER_ADMIN';
+      const isSeller = user.role === 'seller' || user.role === 'SELLER';
+      navigate(isAdmin ? '/admin' : isSeller ? '/seller' : '/', { replace: true });
     } catch (err) {
       toast(err.message || 'Could not update password', 'error');
     } finally {

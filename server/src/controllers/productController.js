@@ -5,6 +5,7 @@ import { httpError } from '../utils/text.js';
 import { ensureShopForSeller } from '../services/shops.js';
 import { saveImage, removeImage } from '../services/storage.js';
 import { recordAudit } from '../services/audit.js';
+import { hasRole, ROLES } from '../config/rbac.js';
 
 // Escape user-supplied text before using it in a MongoDB regex.
 const escapeRegex = (text) => String(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -37,8 +38,8 @@ const buildQuery = (q) => {
 };
 
 const assertCanManageProduct = (req, product) => {
-  if (req.user.role === 'admin') return;
-  if (req.user.role === 'seller' && String(product.seller) === String(req.user._id)) return;
+  if (hasRole(req.user, ROLES.SUPER_ADMIN)) return;
+  if (hasRole(req.user, ROLES.SELLER) && String(product.seller) === String(req.user._id)) return;
   throw httpError(403, 'You do not have permission to manage this product');
 };
 
@@ -93,7 +94,7 @@ export const getProductById = asyncHandler(async (req, res) => {
 
   if (product.status !== 'published') {
     const isOwner = req.user && String(product.seller) === String(req.user._id);
-    const isAdmin = req.user && req.user.role === 'admin';
+    const isAdmin = req.user && hasRole(req.user, ROLES.SUPER_ADMIN);
     if (!isOwner && !isAdmin) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
@@ -120,7 +121,7 @@ export const getMyProducts = asyncHandler(async (req, res) => {
   delete query.status; // allow all statuses for owner, unless explicitly filtered
   if (req.query.status) query.status = req.query.status;
 
-  if (req.user.role === 'seller') {
+  if (hasRole(req.user, ROLES.SELLER)) {
     const shop = await ensureShopForSeller(req.user);
     query.seller = req.user._id;
     query.shop = shop._id;
@@ -157,7 +158,7 @@ export const createProduct = asyncHandler(async (req, res) => {
   delete payload.rating;
   delete payload.numReviews;
 
-  if (req.user.role === 'seller') {
+  if (hasRole(req.user, ROLES.SELLER)) {
     const shop = await ensureShopForSeller(req.user);
     payload.seller = req.user._id;
     payload.shop = shop._id;
@@ -184,7 +185,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
   assertCanManageProduct(req, product);
 
   const { _id: _id, slug: _slug, createdAt: _createdAt, updatedAt: _updatedAt, seller: _seller, shop: _shop, sold: _sold, rating: _rating, numReviews: _numReviews, ...updates } = req.body;
-  if (req.user.role === 'seller') {
+  if (hasRole(req.user, ROLES.SELLER)) {
     delete updates.featured; // only admin can feature
   }
   Object.assign(product, updates);

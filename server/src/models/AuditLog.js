@@ -27,6 +27,11 @@ const auditLogSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       default: {},
     },
+    outcome: {
+      type: String,
+      enum: ['success', 'failure', 'denied'],
+      default: 'success',
+    },
     ip: {
       type: String,
       default: '',

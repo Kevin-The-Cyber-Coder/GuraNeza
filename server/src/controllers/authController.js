@@ -2,6 +2,7 @@ import User from '../models/User.js';
 import { generateToken } from '../middleware/auth.js';
 import { asyncHandler } from '../middleware/error.js';
 import { validatePasswordStrength } from '../utils/password.js';
+import { hasRole, ROLES } from '../config/rbac.js';
 
 const sanitize = (user) => ({
   _id: user._id,
@@ -70,17 +71,17 @@ export const login = asyncHandler(async (req, res) => {
     return res.status(401).json({ success: false, message: 'Invalid email or password' });
   }
   if (!user.isActive) {
-    const canUseTemporaryPassword = user.role === 'seller' && user.mustChangePassword;
+    const canUseTemporaryPassword = hasRole(user, ROLES.SELLER) && user.mustChangePassword;
     if (!canUseTemporaryPassword) {
       return res.status(403).json({
         success: false,
-        message:
-          user.role === 'seller'
-            ? 'Your seller account is not active yet. Please use the activation link or temporary credentials provided by GuraNeza.'
-            : 'This account has been disabled',
+        message: hasRole(user, ROLES.SELLER)
+          ? 'Your seller account is not active yet. Please use the activation link or temporary credentials provided by GuraNeza.'
+          : 'This account has been disabled',
       });
     }
     user.isActive = true;
+    user.accountStatus = 'active';
     await user.save();
   }
 

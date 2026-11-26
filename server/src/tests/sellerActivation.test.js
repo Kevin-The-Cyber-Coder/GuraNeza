@@ -86,7 +86,7 @@ describe('seller invitation activation', () => {
       .send({ token, password: 'NewPass1', confirmPassword: 'NewPass1' });
 
     expect(res.status).toBe(200);
-    expect(res.body.user.role).toBe('seller');
+    expect(['seller', 'SELLER']).toContain(res.body.user.role);
     expect(res.body.user.isActive).toBe(true);
     expect(res.body.token).toBeTruthy();
 
@@ -99,13 +99,13 @@ describe('seller invitation activation', () => {
       .post('/api/auth/login')
       .send({ email: APPLICATION.email, password: 'NewPass1' });
     expect(login.status).toBe(200);
-    expect(login.body.user.role).toBe('seller');
+    expect(['seller', 'SELLER']).toContain(login.body.user.role);
 
     const me = await request(app)
       .get('/api/auth/me')
       .set('Authorization', `Bearer ${res.body.token}`);
     expect(me.status).toBe(200);
-    expect(me.body.user.role).toBe('seller');
+    expect(['seller', 'SELLER']).toContain(me.body.user.role);
   });
 
   it('does not allow an activation link to be used twice', async () => {

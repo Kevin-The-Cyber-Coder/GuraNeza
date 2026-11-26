@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import SellerApplication from '../models/SellerApplication.js';
+import { hasRole, ROLES } from '../config/rbac.js';
 import SellerInvitation from '../models/SellerInvitation.js';
 import User from '../models/User.js';
 import { isProd } from '../config/env.js';
@@ -70,7 +71,7 @@ export const createApplication = asyncHandler(async (req, res) => {
     return res.status(409).json({
       success: false,
       message:
-        existingUser.role === 'admin'
+        hasRole(existingUser, ROLES.SUPER_ADMIN)
           ? 'Administrator accounts cannot apply to become sellers.'
           : 'This email is already registered as a seller. Please sign in to your seller account.',
     });
@@ -250,10 +251,10 @@ export const approveApplication = asyncHandler(async (req, res) => {
     if (session) userQuery.session(session);
     let user = await userQuery;
 
-    if (user?.role === 'admin') {
+    if (user && hasRole(user, ROLES.SUPER_ADMIN)) {
       throw httpError(409, 'Administrator accounts cannot be converted into sellers.');
     }
-    if (user?.role === 'seller' && user.isActive) {
+    if (user && hasRole(user, ROLES.SELLER) && user.isActive) {
       throw httpError(409, 'This email already belongs to an active seller account.');
     }
 
@@ -422,7 +423,7 @@ export const resendInvitation = asyncHandler(async (req, res) => {
     const userQuery = User.findById(application.user);
     if (session) userQuery.session(session);
     const user = await userQuery;
-    if (!user || user.role !== 'seller') {
+    if (!user || !hasRole(user, ROLES.SELLER)) {
       throw httpError(409, 'The seller account for this application could not be found.');
     }
     if (user.isActive) {

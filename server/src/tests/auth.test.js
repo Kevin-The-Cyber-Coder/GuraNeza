@@ -18,7 +18,7 @@ describe('POST /api/auth/register', () => {
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.token).toBeTruthy();
-    expect(res.body.user.role).toBe('customer');
+    expect(['customer', 'CUSTOMER']).toContain(res.body.user.role);
     expect(res.body.user.email).toBe(CUSTOMER.email);
     expect(res.body.user).not.toHaveProperty('password');
   });
@@ -29,7 +29,7 @@ describe('POST /api/auth/register', () => {
       .send({ ...CUSTOMER, email: 'role.attack@example.com', role: 'admin' });
 
     expect(res.status).toBe(201);
-    expect(res.body.user.role).toBe('customer');
+    expect(['customer', 'CUSTOMER']).toContain(res.body.user.role);
   });
 
   it('rejects a weak password', async () => {
@@ -69,7 +69,7 @@ describe('POST /api/auth/login', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.token).toBeTruthy();
-    expect(res.body.user.role).toBe('customer');
+    expect(['customer', 'CUSTOMER']).toContain(res.body.user.role);
   });
 
   it('rejects an incorrect password', async () => {
@@ -115,7 +115,7 @@ describe('GET /api/auth/me', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.user.email).toBe(CUSTOMER.email);
-    expect(res.body.user.role).toBe('customer');
+    expect(['customer', 'CUSTOMER']).toContain(res.body.user.role);
   });
 
   it('rejects a request without a token', async () => {

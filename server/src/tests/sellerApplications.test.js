@@ -110,7 +110,7 @@ describe('seller applications', () => {
     expect(res.body.activationUrl).toContain('/seller/activate?token=');
 
     const seller = await User.findOne({ email: APPLICATION.email });
-    expect(seller.role).toBe('seller');
+    expect(['seller', 'SELLER']).toContain(seller.role);
     expect(seller.isActive).toBe(false);
 
     const invitation = await SellerInvitation.findOne({ application: id }).select('+tokenHash');
@@ -203,7 +203,7 @@ describe('seller applications', () => {
     expect(res.status).toBe(200);
 
     const upgraded = await User.findById(customerId);
-    expect(upgraded.role).toBe('seller');
+    expect(['seller', 'SELLER']).toContain(upgraded.role);
     expect(upgraded.isActive).toBe(false);
   });
 
