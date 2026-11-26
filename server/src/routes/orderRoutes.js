@@ -7,8 +7,9 @@ import {
   getOrderById,
   updateOrderStatus,
   deleteOrder,
+  getSellerOrders,
 } from '../controllers/orderController.js';
-import { protect, adminOnly } from '../middleware/auth.js';
+import { protect, adminOnly, sellerOnly } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -16,6 +17,9 @@ const router = Router();
 router.post('/', createOrder);
 router.post('/track', trackOrder);
 router.get('/my-orders', protect, getMyOrders);
+
+// Seller
+router.get('/seller/mine', protect, sellerOnly, getSellerOrders);
 
 // Admin
 router.get('/', protect, adminOnly, getAllOrders);
