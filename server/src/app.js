@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'node:path';
 
 import env from './config/env.js';
 import authRoutes from './routes/authRoutes.js';
@@ -9,6 +10,7 @@ import contactRoutes from './routes/contactRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import sellerApplicationRoutes from './routes/sellerApplicationRoutes.js';
 import sellerInvitationRoutes from './routes/sellerInvitationRoutes.js';
+import shopRoutes from './routes/shopRoutes.js';
 import errorHandler from './middleware/error.js';
 import { apiLimiter, securityHeaders } from './middleware/security.js';
 
@@ -44,6 +46,7 @@ app.use(
 );
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
 app.use('/api', apiLimiter);
 
 // API health check
@@ -65,6 +68,7 @@ app.use('/api/contacts', contactRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/seller-applications', sellerApplicationRoutes);
 app.use('/api/seller-invitations', sellerInvitationRoutes);
+app.use('/api/shops', shopRoutes);
 
 // 404 handler
 app.use('/api', (_req, res) => {
@@ -72,7 +76,6 @@ app.use('/api', (_req, res) => {
 });
 
 // Serve built frontend in production if present
-import path from 'path';
 import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const clientDist = path.resolve(__dirname, '../../client/dist');
