@@ -37,3 +37,8 @@ coverage/
 uploads/
 *.tmp
 .cache/
+.snapshot-run/
+.shot-payload.b64
+client/public/__shot-init.html
+docs/screenshots/*.tmp
+
