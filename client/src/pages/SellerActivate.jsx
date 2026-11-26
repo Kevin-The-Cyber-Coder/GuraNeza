@@ -51,7 +51,7 @@ const SellerActivate = () => {
       });
       loginWithToken(data.token, data.user);
       toast(data.message || 'Your seller account is now active');
-      navigate('/login?activated=1', { replace: true });
+      navigate('/seller', { replace: true });
     } catch (err) {
       toast(err.message || 'Could not activate your account', 'error');
       setError(err.message || 'Could not activate your account');

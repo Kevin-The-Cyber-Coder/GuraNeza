@@ -3,6 +3,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import AdminRoute from './components/AdminRoute';
+import SellerRoute from './components/SellerRoute';
 import WelcomeModal from './components/WelcomeModal';
 
 import Home from './pages/Home';
@@ -27,6 +28,9 @@ import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminContacts from './pages/admin/AdminContacts';
 import AdminSellerApplications from './pages/admin/AdminSellerApplications';
+
+import SellerDashboard from './pages/seller/SellerDashboard';
+import SellerShop from './pages/seller/SellerShop';
 
 const StoreLayout = ({ children }) => (
   <>
@@ -65,6 +69,12 @@ const App = () => (
         <Route path="/admin/orders" element={<AdminOrders />} />
         <Route path="/admin/contacts" element={<AdminContacts />} />
         <Route path="/admin/seller-applications" element={<AdminSellerApplications />} />
+      </Route>
+
+      {/* Seller area */}
+      <Route element={<SellerRoute />}>
+        <Route path="/seller" element={<SellerDashboard />} />
+        <Route path="/seller/shop" element={<SellerShop />} />
       </Route>
 
       <Route path="*" element={<StoreLayout><NotFound /></StoreLayout>} />
