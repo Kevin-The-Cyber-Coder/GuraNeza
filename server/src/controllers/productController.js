@@ -1,6 +1,10 @@
 import Product from '../models/Product.js';
 import Order from '../models/Order.js';
 import { asyncHandler } from '../middleware/error.js';
+import { httpError } from '../utils/text.js';
+import { ensureShopForSeller } from '../services/shops.js';
+import { saveImage, removeImage } from '../services/storage.js';
+import { recordAudit } from '../services/audit.js';
 
 // Escape user-supplied text before using it in a MongoDB regex.
 const escapeRegex = (text) => String(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -19,6 +23,9 @@ const buildQuery = (q) => {
   }
   if (q.category && q.category !== 'All') query.category = q.category;
   if (q.brand) query.brand = q.brand;
+  if (q.shop) query.shop = q.shop;
+  if (q.seller) query.seller = q.seller;
+  if (q.status) query.status = q.status;
   if (q.minPrice || q.maxPrice) {
     query.price = {};
     if (q.minPrice) query.price.$gte = Number(q.minPrice);
@@ -29,6 +36,12 @@ const buildQuery = (q) => {
   return query;
 };
 
+const assertCanManageProduct = (req, product) => {
+  if (req.user.role === 'admin') return;
+  if (req.user.role === 'seller' && String(product.seller) === String(req.user._id)) return;
+  throw httpError(403, 'You do not have permission to manage this product');
+};
+
 // @desc    List products with search / filter / sort / pagination
 // @route   GET /api/products
 // @access  Public
@@ -36,6 +49,7 @@ export const getProducts = asyncHandler(async (req, res) => {
   const page = Math.max(1, Number(req.query.page) || 1);
   const limit = Math.min(60, Number(req.query.limit) || 12);
   const query = buildQuery(req.query);
+  if (!query.status) query.status = 'published';
 
   const sortMap = {
     newest: { createdAt: -1 },
@@ -49,6 +63,7 @@ export const getProducts = asyncHandler(async (req, res) => {
 
   const total = await Product.countDocuments(query);
   const products = await Product.find(query)
+    .populate('shop', 'name slug logo status')
     .sort(sort)
     .skip((page - 1) * limit)
     .limit(limit)
@@ -68,15 +83,29 @@ export const getProducts = asyncHandler(async (req, res) => {
 // @access  Public
 export const getProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const product = await Product.findById(id).catch(() => null) ||
-    (await Product.findOne({ slug: id }).catch(() => null));
+  const product =
+    (await Product.findById(id).populate('shop', 'name slug logo status').catch(() => null)) ||
+    (await Product.findOne({ slug: id }).populate('shop', 'name slug logo status').catch(() => null));
 
-  if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+  if (!product || (product.status !== 'published' && !req.user)) {
+    return res.status(404).json({ success: false, message: 'Product not found' });
+  }
+
+  if (product.status !== 'published') {
+    const isOwner = req.user && String(product.seller) === String(req.user._id);
+    const isAdmin = req.user && req.user.role === 'admin';
+    if (!isOwner && !isAdmin) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+  }
 
   const related = await Product.find({
     category: product.category,
     _id: { $ne: product._id },
-  }).limit(4).lean();
+    status: 'published',
+  })
+    .limit(4)
+    .lean();
 
   res.json({ success: true, product, related });
 });
@@ -84,13 +113,65 @@ export const getProductById = asyncHandler(async (req, res) => {
 // @desc    Create a product
 // @route   POST /api/products
 // @access  Admin
+export const getMyProducts = asyncHandler(async (req, res) => {
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const limit = Math.min(60, Number(req.query.limit) || 20);
+  const query = buildQuery(req.query);
+  delete query.status; // allow all statuses for owner, unless explicitly filtered
+  if (req.query.status) query.status = req.query.status;
+
+  if (req.user.role === 'seller') {
+    const shop = await ensureShopForSeller(req.user);
+    query.seller = req.user._id;
+    query.shop = shop._id;
+  }
+
+  const sortMap = {
+    newest: { createdAt: -1 },
+    'price-asc': { price: 1 },
+    'price-desc': { price: -1 },
+    popular: { sold: -1 },
+    rating: { rating: -1 },
+    name: { name: 1 },
+  };
+  const sort = sortMap[req.query.sort] || { createdAt: -1 };
+
+  const total = await Product.countDocuments(query);
+  const products = await Product.find(query)
+    .populate('shop', 'name slug logo status')
+    .sort(sort)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .lean();
+
+  res.json({ success: true, products, page, pages: Math.ceil(total / limit), total });
+});
+
 export const createProduct = asyncHandler(async (req, res) => {
   const payload = { ...req.body };
   delete payload._id;
   delete payload.createdAt;
   delete payload.updatedAt;
+  delete payload.slug;
+  delete payload.sold;
+  delete payload.rating;
+  delete payload.numReviews;
+
+  if (req.user.role === 'seller') {
+    const shop = await ensureShopForSeller(req.user);
+    payload.seller = req.user._id;
+    payload.shop = shop._id;
+    payload.status = payload.status === 'draft' ? 'draft' : 'published';
+  }
 
   const product = await Product.create(payload);
+  await recordAudit({
+    req,
+    action: 'product.created',
+    entityType: 'Product',
+    entityId: product._id,
+    metadata: { sellerId: product.seller, shopId: product.shop },
+  });
   res.status(201).json({ success: true, message: 'Product created successfully', product });
 });
 
@@ -100,11 +181,22 @@ export const createProduct = asyncHandler(async (req, res) => {
 export const updateProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+  assertCanManageProduct(req, product);
 
-  const { _id, slug, createdAt, updatedAt, ...updates } = req.body;
+  const { _id: _id, slug: _slug, createdAt: _createdAt, updatedAt: _updatedAt, seller: _seller, shop: _shop, sold: _sold, rating: _rating, numReviews: _numReviews, ...updates } = req.body;
+  if (req.user.role === 'seller') {
+    delete updates.featured; // only admin can feature
+  }
   Object.assign(product, updates);
-  await product.save(); // runs pre('save') so slug / shortDescription stay in sync
+  await product.save();
 
+  await recordAudit({
+    req,
+    action: 'product.updated',
+    entityType: 'Product',
+    entityId: product._id,
+    metadata: { sellerId: product.seller, shopId: product.shop },
+  });
   res.json({ success: true, message: 'Product updated successfully', product });
 });
 
@@ -112,9 +204,47 @@ export const updateProduct = asyncHandler(async (req, res) => {
 // @route   DELETE /api/products/:id
 // @access  Admin
 export const deleteProduct = asyncHandler(async (req, res) => {
-  const product = await Product.findByIdAndDelete(req.params.id);
+  const product = await Product.findById(req.params.id);
   if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+  assertCanManageProduct(req, product);
+  await product.deleteOne();
+  await recordAudit({
+    req,
+    action: 'product.deleted',
+    entityType: 'Product',
+    entityId: product._id,
+    metadata: { sellerId: product.seller, shopId: product.shop },
+  });
   res.json({ success: true, message: 'Product deleted successfully' });
+});
+
+export const uploadProductImages = asyncHandler(async (req, res) => {
+  const product = await Product.findById(req.params.id);
+  if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+  assertCanManageProduct(req, product);
+  if (!req.files?.length) throw httpError(400, 'Please select at least one image');
+
+  const uploaded = [];
+  for (const file of req.files) {
+    const saved = await saveImage(file, `products/${product._id}`);
+    uploaded.push(saved.url);
+  }
+  product.images = [...(product.images || []), ...uploaded].slice(0, 8);
+  await product.save();
+
+  res.json({ success: true, message: 'Images uploaded successfully', product, images: product.images });
+});
+
+export const removeProductImage = asyncHandler(async (req, res) => {
+  const product = await Product.findById(req.params.id);
+  if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+  assertCanManageProduct(req, product);
+  const { imageUrl } = req.body;
+  if (!imageUrl) throw httpError(400, 'imageUrl is required');
+  product.images = (product.images || []).filter((img) => img !== imageUrl);
+  await product.save();
+  await removeImage(imageUrl);
+  res.json({ success: true, message: 'Image removed', product, images: product.images });
 });
 
 // @desc    Bulk delete products
