@@ -48,6 +48,14 @@ const errorHandler = (err, _req, res, _next) => {
     code = 401;
   }
 
+  if (err.name === 'MulterError') {
+    code = 400;
+    message =
+      err.code === 'LIMIT_FILE_SIZE'
+        ? 'The uploaded file is too large'
+        : 'Invalid file upload';
+  }
+
   if (code >= 500 && !isProd) console.error('[Error]', err);
 
   const body = {
