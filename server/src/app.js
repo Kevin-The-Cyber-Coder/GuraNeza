@@ -12,6 +12,7 @@ import sellerApplicationRoutes from './routes/sellerApplicationRoutes.js';
 import sellerInvitationRoutes from './routes/sellerInvitationRoutes.js';
 import shopRoutes from './routes/shopRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 import errorHandler from './middleware/error.js';
 import { apiLimiter, securityHeaders } from './middleware/security.js';
 
@@ -71,6 +72,7 @@ app.use('/api/seller-applications', sellerApplicationRoutes);
 app.use('/api/seller-invitations', sellerInvitationRoutes);
 app.use('/api/shops', shopRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.use('/api', (_req, res) => {
