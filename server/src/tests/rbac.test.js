@@ -50,14 +50,16 @@ describe('role-based access control', () => {
     expect(res.status).toBe(403);
   });
 
-  it('rejects a seller creating a product through the admin endpoint', async () => {
+  it('allows an active seller to create a product scoped to their shop', async () => {
     const { token } = await createUser('seller');
     const res = await request(app)
       .post('/api/products')
       .set('Authorization', `Bearer ${token}`)
       .send({ name: 'Seller product', description: 'x', price: 100, category: 'Other', stock: 1 });
 
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(201);
+    expect(res.body.product.seller).toBeTruthy();
+    expect(res.body.product.shop).toBeTruthy();
   });
 
   it('rejects a customer listing every order', async () => {
