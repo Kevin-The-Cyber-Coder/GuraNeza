@@ -127,6 +127,21 @@ export const dashboardAPI = {
   activity: () => api.get('/dashboard/activity'),
 };
 
+// ---- Notifications ----
+export const notificationsAPI = {
+  mine: (params = {}) => {
+    const query = new URLSearchParams(
+      Object.entries(params).reduce((acc, [k, v]) => {
+        if (v !== undefined && v !== null && v !== '') acc[k] = v;
+        return acc;
+      }, {})
+    ).toString();
+    return api.get(`/notifications/me${query ? `?${query}` : ''}`);
+  },
+  markRead: (id) => api.patch(`/notifications/${id}/read`),
+  markAllRead: () => api.patch('/notifications/read-all'),
+};
+
 // ---- Seller applications ----
 export const sellerApplicationsAPI = {
   submit: (data) => api.post('/seller-applications', data),

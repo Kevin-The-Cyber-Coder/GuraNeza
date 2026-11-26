@@ -24,6 +24,7 @@ const AdminSellerApplications = () => {
   const [rejectTarget, setRejectTarget] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
   const [activationLink, setActivationLink] = useState('');
+  const [tempCreds, setTempCreds] = useState(null);
 
   const load = () => {
     setLoading(true);
@@ -63,11 +64,8 @@ const AdminSellerApplications = () => {
         ? await sellerApplicationsAPI.approve(id)
         : await sellerApplicationsAPI.resendInvitation(id);
       toast(data.message || successMessage);
-      if (data.activationUrl) {
-        setActivationLink(data.activationUrl);
-      } else {
-        setActivationLink('');
-      }
+      setActivationLink(data.activationUrl || '');
+      setTempCreds(data.temporaryCredentials || null);
       await load();
       if (selected?.application?._id === id) await openDetail(id);
     } catch (err) {
@@ -90,6 +88,7 @@ const AdminSellerApplications = () => {
       setRejectTarget(null);
       setRejectReason('');
       setActivationLink('');
+      setTempCreds(null);
       await load();
       if (selected?.application?._id === rejectTarget._id) await openDetail(rejectTarget._id);
     } catch (err) {
@@ -106,6 +105,17 @@ const AdminSellerApplications = () => {
       toast('Activation link copied');
     } catch {
       toast('Could not copy the link', 'error');
+    }
+  };
+
+  const copyTempCreds = async () => {
+    if (!tempCreds) return;
+    const text = `Email: ${tempCreds.email}\nTemporary password: ${tempCreds.password}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast('Temporary credentials copied');
+    } catch {
+      toast('Could not copy credentials', 'error');
     }
   };
 
@@ -168,6 +178,22 @@ const AdminSellerApplications = () => {
             </div>
             <button className="btn btn--outline btn--sm" onClick={copyLink}><Copy size={14} /> Copy</button>
             <a className="btn btn--primary btn--sm" href={activationLink} target="_blank" rel="noreferrer"><ExternalLink size={14} /> Open</a>
+          </div>
+        )}
+
+        {tempCreds && (
+          <div style={{ margin: '16px 0', padding: 14, border: '1px solid #fde68a', background: '#fffbeb', borderRadius: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'start', flexWrap: 'wrap' }}>
+              <div>
+                <strong style={{ display: 'block', fontSize: '.82rem', color: '#92400e' }}>Temporary seller credentials (shown once)</strong>
+                <div style={{ fontSize: '.78rem', color: '#78350f', marginTop: 4, lineHeight: 1.6 }}>Share these securely with the seller. They are not emailed. The seller must change the password on first login.</div>
+              </div>
+              <button className="btn btn--outline btn--sm" onClick={copyTempCreds}><Copy size={14} /> Copy</button>
+            </div>
+            <div style={{ marginTop: 10, display: 'grid', gap: 6, fontSize: '.82rem' }}>
+              <div><strong>Email:</strong> {tempCreds.email}</div>
+              <div><strong>Temporary password:</strong> <code style={{ background: '#fff', padding: '2px 6px', borderRadius: 4, border: '1px solid #fcd34d' }}>{tempCreds.password}</code></div>
+            </div>
           </div>
         )}
 

@@ -21,6 +21,7 @@ import Contact from './pages/Contact';
 import BecomeSeller from './pages/BecomeSeller';
 import SellerApplicationStatus from './pages/SellerApplicationStatus';
 import SellerActivate from './pages/SellerActivate';
+import ChangePassword from './pages/ChangePassword';
 import NotFound from './pages/NotFound';
 
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -62,6 +63,7 @@ const App = () => (
       <Route path="/become-a-seller" element={<StoreLayout><BecomeSeller /></StoreLayout>} />
       <Route path="/seller-application/status" element={<StoreLayout><SellerApplicationStatus /></StoreLayout>} />
       <Route path="/seller/activate" element={<StoreLayout><SellerActivate /></StoreLayout>} />
+      <Route path="/change-password" element={<StoreLayout><ChangePassword /></StoreLayout>} />
 
       {/* Admin area */}
       <Route element={<AdminRoute />}>
