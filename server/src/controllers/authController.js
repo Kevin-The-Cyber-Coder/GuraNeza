@@ -13,6 +13,7 @@ const sanitize = (user) => ({
   role: user.role,
   avatar: user.avatar || '',
   isActive: user.isActive,
+  mustChangePassword: !!user.mustChangePassword,
   createdAt: user.createdAt,
 });
 
@@ -69,20 +70,25 @@ export const login = asyncHandler(async (req, res) => {
     return res.status(401).json({ success: false, message: 'Invalid email or password' });
   }
   if (!user.isActive) {
-    return res.status(403).json({
-      success: false,
-      message:
-        user.role === 'seller'
-          ? 'Your seller account is not active yet. Please use the activation link sent to your email.'
-          : 'This account has been disabled',
-    });
+    const canUseTemporaryPassword = user.role === 'seller' && user.mustChangePassword;
+    if (!canUseTemporaryPassword) {
+      return res.status(403).json({
+        success: false,
+        message:
+          user.role === 'seller'
+            ? 'Your seller account is not active yet. Please use the activation link or temporary credentials provided by GuraNeza.'
+            : 'This account has been disabled',
+      });
+    }
+    user.isActive = true;
+    await user.save();
   }
 
   await User.findByIdAndUpdate(user._id, { lastLogin: new Date() });
 
   res.json({
     success: true,
-    message: `Welcome back, ${user.name}!`,
+    message: user.mustChangePassword ? 'Please change your temporary password to continue.' : `Welcome back, ${user.name}!`,
     token: generateToken(user._id),
     user: sanitize(user),
   });
@@ -115,6 +121,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
       return res.status(400).json({ success: false, message: passwordErrors.join('. ') });
     }
     user.password = password;
+    user.mustChangePassword = false;
   }
 
   await user.save();
