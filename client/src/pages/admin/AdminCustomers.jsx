@@ -59,7 +59,7 @@ const AdminCustomers = () => {
                 <tr key={u._id}>
                   <td><strong>{u.name}</strong></td>
                   <td>{u.email}</td>
-                  <td><span className={`badge badge--${u.accountStatus === 'active' ? 'success' : u.accountStatus === 'suspended' ? 'danger' : 'warning'}`}>{u.accountStatus}</span></td>
+                  <td><span className={`status-badge status-badge--${u.accountStatus === 'active' ? 'success' : u.accountStatus === 'suspended' ? 'danger' : 'warning'}`}>{u.accountStatus}</span></td>
                   <td>{formatDate(u.createdAt)}</td>
                   <td style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {u.accountStatus !== 'active' && <button className="btn btn--sm btn--outline" onClick={() => changeStatus(u._id, 'active')}>Activate</button>}

@@ -44,7 +44,7 @@ const AdminAuditLogs = () => {
                   <td>{l.actor?.name || 'System'}<div style={{ fontSize: '.75rem', color: 'var(--muted)' }}>{l.actor?.email || ''}</div></td>
                   <td><code style={{ fontSize: '.75rem' }}>{l.action}</code></td>
                   <td>{l.entityType}<div style={{ fontSize: '.75rem', color: 'var(--muted)' }}>{String(l.entityId || '').slice(-8)}</div></td>
-                  <td><span className={`badge badge--${l.outcome === 'success' ? 'success' : l.outcome === 'failure' ? 'danger' : 'warning'}`}>{l.outcome}</span></td>
+                  <td><span className={`status-badge status-badge--${l.outcome === 'success' ? 'success' : l.outcome === 'failure' ? 'danger' : 'warning'}`}>{l.outcome}</span></td>
                 </tr>
               ))}
             </tbody>

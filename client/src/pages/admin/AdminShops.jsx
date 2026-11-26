@@ -59,7 +59,7 @@ const AdminShops = () => {
                 <tr key={s._id}>
                   <td><strong>{s.name}</strong><div style={{ fontSize: '.78rem', color: 'var(--muted)' }}>{s.slug}</div></td>
                   <td>{s.owner?.name || '—'}<div style={{ fontSize: '.78rem', color: 'var(--muted)' }}>{s.owner?.email}</div></td>
-                  <td><span className={`badge badge--${s.status === 'active' ? 'success' : s.status === 'suspended' ? 'danger' : 'warning'}`}>{s.status}</span></td>
+                  <td><span className={`status-badge status-badge--${s.status === 'active' ? 'success' : s.status === 'suspended' ? 'danger' : 'warning'}`}>{s.status}</span></td>
                   <td>{formatDate(s.createdAt)}</td>
                   <td style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {s.status !== 'active' && <button className="btn btn--sm btn--outline" onClick={() => changeStatus(s._id, 'active')}>Activate</button>}
