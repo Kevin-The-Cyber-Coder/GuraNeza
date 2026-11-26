@@ -25,7 +25,7 @@ const links = [
 ];
 
 const Header = () => {
-  const { user, isAuthenticated, isAdmin, isSeller, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, isSeller, isCustomer, logout } = useAuth();
   const { itemCount } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
@@ -118,7 +118,8 @@ const Header = () => {
                         <strong>{user.name}</strong>
                         <span>{user.email}</span>
                       </div>
-                      <Link to="/my-orders"><Package size={16} /> My Orders</Link>
+                      {isCustomer && <Link to="/account"><LayoutDashboard size={16} /> My Account</Link>}
+                      {isCustomer && <Link to="/my-orders"><Package size={16} /> My Orders</Link>}
                       {isSeller && <Link to="/seller"><LayoutDashboard size={16} /> Seller Dashboard</Link>}
                       {isAdmin && <Link to="/admin"><LayoutDashboard size={16} /> Admin Dashboard</Link>}
                       <button onClick={handleLogout}><LogOut size={16} /> Sign out</button>
@@ -162,6 +163,8 @@ const Header = () => {
                 <Link to="/register" className="btn btn--primary btn--sm">Join GuraNeza</Link>
               </div>
             )}
+            {isCustomer && <Link to="/account" className="mobile-admin">My Account</Link>}
+            {isSeller && <Link to="/seller" className="mobile-admin">Seller Dashboard</Link>}
             {isAdmin && <Link to="/admin" className="mobile-admin">Admin Dashboard</Link>}
           </div>
         )}
