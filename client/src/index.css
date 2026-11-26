@@ -60,6 +60,8 @@ small { font-size: 0.78rem; }
 .btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
 .btn--primary { background: var(--primary); color: #fff; box-shadow: 0 6px 16px rgba(11, 107, 79, 0.22); }
 .btn--primary:hover { background: var(--primary-dark); box-shadow: 0 10px 22px rgba(11, 107, 79, 0.3); }
+.btn--danger { background: var(--danger); color: #fff; box-shadow: 0 6px 16px rgba(220, 38, 38, 0.2); }
+.btn--danger:hover { background: #b91c1c; }
 .btn--gold { background: var(--gold); color: #3b2a08; }
 .btn--gold:hover { background: var(--gold-dark); }
 .btn--outline { border-color: var(--line); background: #fff; color: var(--ink); }

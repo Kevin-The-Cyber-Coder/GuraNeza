@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Package, ShoppingCart, Mail, LogOut,
-  Menu, X, ExternalLink, Bell, Search,
+  Menu, X, ExternalLink, Bell, Search, Store,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Logo from '../../components/Logo';
@@ -11,6 +11,7 @@ const navItems = [
   { to: '/admin', label: 'Overview', icon: LayoutDashboard, end: true },
   { to: '/admin/products', label: 'Products', icon: Package },
   { to: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+  { to: '/admin/seller-applications', label: 'Seller Applications', icon: Store },
   { to: '/admin/contacts', label: 'Messages', icon: Mail },
 ];
 
