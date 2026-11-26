@@ -103,12 +103,13 @@ export const activateSeller = asyncHandler(async (req, res) => {
     const seller = await userQuery;
 
     if (!seller) throw httpError(404, 'The seller account no longer exists.');
-    if (seller.role !== 'seller') {
+    if (!['seller', 'SELLER'].includes(String(seller.role))) {
       throw httpError(409, 'This account is not a seller account.');
     }
 
     seller.password = password;
     seller.isActive = true;
+    seller.mustChangePassword = false;
     seller.emailVerifiedAt = new Date();
     await (session ? seller.save({ session }) : seller.save());
 

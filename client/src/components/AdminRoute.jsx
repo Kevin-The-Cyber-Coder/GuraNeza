@@ -4,10 +4,11 @@ import { Loader } from './Common';
 import AdminLayout from '../pages/admin/AdminLayout';
 
 const AdminRoute = () => {
-  const { loading, isAuthenticated, isAdmin } = useAuth();
+  const { loading, isAuthenticated, isAdmin, user } = useAuth();
 
   if (loading) return <Loader label="Checking your session..." />;
   if (!isAuthenticated) return <Navigate to="/login?redirect=/admin" replace />;
+  if (user?.mustChangePassword) return <Navigate to="/change-password" replace />;
   if (!isAdmin) return <Navigate to="/" replace />;
 
   return (

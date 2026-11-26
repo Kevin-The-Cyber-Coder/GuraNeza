@@ -24,12 +24,16 @@ const Login = () => {
     try {
       const data = await login(form);
       toast(data.message || 'Welcome back!');
-      const destination =
-        redirect !== '/'
+      const role = data.user.role;
+      const isAdmin = role === 'admin' || role === 'SUPER_ADMIN';
+      const isSeller = role === 'seller' || role === 'SELLER';
+      const destination = data.user.mustChangePassword
+        ? '/change-password'
+        : redirect !== '/'
           ? redirect
-          : data.user.role === 'admin'
+          : isAdmin
             ? '/admin'
-            : data.user.role === 'seller'
+            : isSeller
               ? '/seller'
               : '/';
       navigate(destination, { replace: true });

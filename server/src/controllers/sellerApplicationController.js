@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import SellerApplication from '../models/SellerApplication.js';
+import { hasRole, ROLES } from '../config/rbac.js';
 import SellerInvitation from '../models/SellerInvitation.js';
 import User from '../models/User.js';
 import { isProd } from '../config/env.js';
@@ -9,6 +10,7 @@ import { withTransaction } from '../utils/transaction.js';
 import { escapeRegex, httpError } from '../utils/text.js';
 import { recordAudit } from '../services/audit.js';
 import { sendEmail } from '../services/email.js';
+import { notifyAdmins } from '../services/notifications.js';
 import {
   adminNewSellerApplicationEmail,
   sellerApplicationApprovedEmail,
@@ -69,7 +71,7 @@ export const createApplication = asyncHandler(async (req, res) => {
     return res.status(409).json({
       success: false,
       message:
-        existingUser.role === 'admin'
+        hasRole(existingUser, ROLES.SUPER_ADMIN)
           ? 'Administrator accounts cannot apply to become sellers.'
           : 'This email is already registered as a seller. Please sign in to your seller account.',
     });
@@ -106,6 +108,14 @@ export const createApplication = asyncHandler(async (req, res) => {
     entityType: 'SellerApplication',
     entityId: application._id,
     metadata: { referenceNumber: application.referenceNumber, email: application.email },
+  });
+
+  await notifyAdmins({
+    type: 'seller_application.submitted',
+    title: 'New seller application',
+    message: `${application.fullName} (${application.email}) applied to become a seller.`,
+    link: '/admin/seller-applications',
+    metadata: { applicationId: application._id, referenceNumber: application.referenceNumber },
   });
 
   res.status(201).json({
@@ -241,12 +251,14 @@ export const approveApplication = asyncHandler(async (req, res) => {
     if (session) userQuery.session(session);
     let user = await userQuery;
 
-    if (user?.role === 'admin') {
+    if (user && hasRole(user, ROLES.SUPER_ADMIN)) {
       throw httpError(409, 'Administrator accounts cannot be converted into sellers.');
     }
-    if (user?.role === 'seller' && user.isActive) {
+    if (user && hasRole(user, ROLES.SELLER) && user.isActive) {
       throw httpError(409, 'This email already belongs to an active seller account.');
     }
+
+    const temporaryPassword = `Gz-${crypto.randomBytes(4).toString('hex')}-${crypto.randomBytes(4).toString('hex')}`;
 
     if (!user) {
       const [created] = await User.create(
@@ -256,10 +268,10 @@ export const approveApplication = asyncHandler(async (req, res) => {
             email: application.email,
             phone: application.phone,
             address: application.businessLocation,
-            // Random unguessable placeholder; the seller sets their own password on activation.
-            password: crypto.randomBytes(32).toString('base64url'),
+            password: temporaryPassword,
             role: 'seller',
             isActive: false,
+            mustChangePassword: true,
           },
         ],
         session ? { session } : {}
@@ -269,6 +281,8 @@ export const approveApplication = asyncHandler(async (req, res) => {
       user.role = 'seller';
       user.isActive = false;
       user.name = user.name || application.fullName;
+      user.password = temporaryPassword;
+      user.mustChangePassword = true;
       await save(user, session);
     }
 
@@ -286,7 +300,7 @@ export const approveApplication = asyncHandler(async (req, res) => {
     application.user = user._id;
     await save(application, session);
 
-    return { application, user, invitation, rawToken, expiresAt };
+    return { application, user, invitation, rawToken, expiresAt, temporaryPassword };
   });
 
   const activationUrl = buildActivationUrl(result.rawToken);
@@ -313,14 +327,20 @@ export const approveApplication = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     message: emailResult.sent
-      ? 'Application approved and the activation email was sent.'
-      : 'Application approved, but the activation email could not be sent. Use the activation link to deliver it manually.',
+      ? 'Application approved. Activation email sent and temporary credentials generated.'
+      : 'Application approved. Activation email could not be sent, but temporary credentials were generated.',
     application: serializeApplication(result.application),
     emailSent: emailResult.sent,
     emailError: emailResult.sent ? undefined : emailResult.error,
     expiresAt: result.expiresAt,
     // Development convenience only. Production never exposes the raw token.
     activationUrl: isProd ? undefined : activationUrl,
+    // Shown once to the approving admin. Never emailed.
+    temporaryPassword: result.temporaryPassword,
+    temporaryCredentials: {
+      email: result.user.email,
+      password: result.temporaryPassword,
+    },
   });
 });
 
@@ -403,7 +423,7 @@ export const resendInvitation = asyncHandler(async (req, res) => {
     const userQuery = User.findById(application.user);
     if (session) userQuery.session(session);
     const user = await userQuery;
-    if (!user || user.role !== 'seller') {
+    if (!user || !hasRole(user, ROLES.SELLER)) {
       throw httpError(409, 'The seller account for this application could not be found.');
     }
     if (user.isActive) {

@@ -21,6 +21,7 @@ import Contact from './pages/Contact';
 import BecomeSeller from './pages/BecomeSeller';
 import SellerApplicationStatus from './pages/SellerApplicationStatus';
 import SellerActivate from './pages/SellerActivate';
+import ChangePassword from './pages/ChangePassword';
 import NotFound from './pages/NotFound';
 
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -31,6 +32,7 @@ import AdminSellerApplications from './pages/admin/AdminSellerApplications';
 
 import SellerDashboard from './pages/seller/SellerDashboard';
 import SellerShop from './pages/seller/SellerShop';
+import SellerProducts from './pages/seller/SellerProducts';
 
 const StoreLayout = ({ children }) => (
   <>
@@ -61,6 +63,7 @@ const App = () => (
       <Route path="/become-a-seller" element={<StoreLayout><BecomeSeller /></StoreLayout>} />
       <Route path="/seller-application/status" element={<StoreLayout><SellerApplicationStatus /></StoreLayout>} />
       <Route path="/seller/activate" element={<StoreLayout><SellerActivate /></StoreLayout>} />
+      <Route path="/change-password" element={<StoreLayout><ChangePassword /></StoreLayout>} />
 
       {/* Admin area */}
       <Route element={<AdminRoute />}>
@@ -75,6 +78,7 @@ const App = () => (
       <Route element={<SellerRoute />}>
         <Route path="/seller" element={<SellerDashboard />} />
         <Route path="/seller/shop" element={<SellerShop />} />
+        <Route path="/seller/products" element={<SellerProducts />} />
       </Route>
 
       <Route path="*" element={<StoreLayout><NotFound /></StoreLayout>} />

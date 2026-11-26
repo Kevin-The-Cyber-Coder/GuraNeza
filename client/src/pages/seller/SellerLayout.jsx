@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Store, LogOut, Menu, X, ExternalLink } from 'lucide-react';
+import { LayoutDashboard, Store, Package, LogOut, Menu, X, ExternalLink } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Logo from '../../components/Logo';
 
 const navItems = [
   { to: '/seller', label: 'Overview', icon: LayoutDashboard, end: true },
   { to: '/seller/shop', label: 'My Shop', icon: Store },
+  { to: '/seller/products', label: 'Products', icon: Package },
 ];
 
 const SellerLayout = ({ children }) => {

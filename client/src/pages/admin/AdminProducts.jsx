@@ -28,7 +28,7 @@ const AdminProducts = () => {
   const load = () => {
     setLoading(true);
     setError('');
-    productsAPI.list({ search, category, page, limit: 10 })
+    productsAPI.mine({ search, category, page, limit: 10 })
       .then((data) => { setProducts(data.products || []); setMeta({ page: data.page, pages: data.pages, total: data.total }); })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));

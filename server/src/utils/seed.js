@@ -6,6 +6,7 @@ import Contact from '../models/Contact.js';
 import SellerApplication from '../models/SellerApplication.js';
 import SellerInvitation from '../models/SellerInvitation.js';
 import AuditLog from '../models/AuditLog.js';
+import Notification from '../models/Notification.js';
 import env, { isProd } from '../config/env.js';
 
 if (isProd) {
@@ -255,6 +256,7 @@ const seed = async () => {
       SellerApplication.deleteMany({}),
       SellerInvitation.deleteMany({}),
       AuditLog.deleteMany({}),
+      Notification.deleteMany({}),
       User.deleteMany({ email: { $in: [
         env.ADMIN_EMAIL.toLowerCase(),
         'demo@guraneza.rw',

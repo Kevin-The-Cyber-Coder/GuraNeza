@@ -11,19 +11,22 @@ export const recordAudit = async ({
   entityType,
   entityId,
   metadata = {},
+  outcome = 'success',
 }) => {
   try {
-    await AuditLog.create({
+    return await AuditLog.create({
       actor: actor || req?.user?._id,
       action,
       entityType,
       entityId,
       metadata,
-      ip: req?.ip || '',
+      outcome,
+      ip: req?.ip || req?.headers?.['x-forwarded-for'] || '',
       userAgent: req?.get?.('user-agent') || '',
     });
   } catch (error) {
     console.error(`[audit] Failed to record ${action}: ${error.message}`);
+    return null;
   }
 };
 

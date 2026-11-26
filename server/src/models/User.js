@@ -1,7 +1,21 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-export const USER_ROLES = ['customer', 'seller', 'admin'];
+export const USER_ROLES = ['CUSTOMER', 'SELLER', 'SUPER_ADMIN', 'customer', 'seller', 'admin'];
+
+export const LEGACY_ROLE_MAP = {
+  admin: 'SUPER_ADMIN',
+  super_admin: 'SUPER_ADMIN',
+  customer: 'CUSTOMER',
+  user: 'CUSTOMER',
+  seller: 'SELLER',
+};
+
+export const normalizeRole = (role) => {
+  if (!role) return 'CUSTOMER';
+  const raw = String(role).trim();
+  return LEGACY_ROLE_MAP[raw] || LEGACY_ROLE_MAP[raw.toLowerCase()] || raw.toUpperCase();
+};
 
 const userSchema = new mongoose.Schema(
   {
@@ -41,7 +55,13 @@ const userSchema = new mongoose.Schema(
         values: USER_ROLES,
         message: '{VALUE} is not a valid role',
       },
-      default: 'customer',
+      default: 'CUSTOMER',
+      index: true,
+    },
+    accountStatus: {
+      type: String,
+      enum: ['active', 'suspended', 'pending', 'disabled'],
+      default: 'active',
       index: true,
     },
     avatar: {
@@ -59,6 +79,10 @@ const userSchema = new mongoose.Schema(
     passwordChangedAt: {
       type: Date,
     },
+    mustChangePassword: {
+      type: Boolean,
+      default: false,
+    },
     lastLogin: {
       type: Date,
     },
@@ -68,8 +92,17 @@ const userSchema = new mongoose.Schema(
 
 userSchema.index({ role: 1, isActive: 1 });
 
-// Hash the password before saving when it was changed / newly set.
 userSchema.pre('save', async function (next) {
+  if (this.isModified('role')) {
+    this.role = normalizeRole(this.role);
+  }
+  // Keep legacy isActive in sync with accountStatus.
+  if (this.isModified('accountStatus')) {
+    this.isActive = this.accountStatus === 'active' || this.accountStatus === 'pending';
+  }
+  if (this.isModified('isActive') && !this.isModified('accountStatus')) {
+    this.accountStatus = this.isActive ? 'active' : 'disabled';
+  }
   if (!this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
@@ -81,12 +114,28 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
 };
 
+userSchema.methods.normalizedRole = function () {
+  return normalizeRole(this.role);
+};
+
 userSchema.methods.isSeller = function () {
-  return this.role === 'seller';
+  return this.normalizedRole() === 'SELLER';
+};
+
+userSchema.methods.isSuperAdmin = function () {
+  return this.normalizedRole() === 'SUPER_ADMIN';
 };
 
 userSchema.methods.isAdmin = function () {
-  return this.role === 'admin';
+  return this.isSuperAdmin();
+};
+
+userSchema.methods.isCustomer = function () {
+  return this.normalizedRole() === 'CUSTOMER';
+};
+
+userSchema.methods.isSuspended = function () {
+  return this.accountStatus === 'suspended' || this.accountStatus === 'disabled' || this.isActive === false;
 };
 
 // Never expose the password hash or internal bookkeeping in JSON responses.

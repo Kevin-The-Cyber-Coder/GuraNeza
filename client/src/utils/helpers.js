@@ -1,3 +1,16 @@
+/** Product categories shared by the storefront and dashboard forms. */
+export const CATEGORIES = [
+  'All',
+  'Electronics',
+  'Fashion',
+  'Home & Living',
+  'Beauty',
+  'Groceries',
+  'Sports',
+  'Books',
+  'Other',
+];
+
 /** Format a number as Rwandan Francs. */
 export const formatRWF = (value) =>
   `${new Intl.NumberFormat('en-RW').format(Math.round(Number(value) || 0))} RWF`;

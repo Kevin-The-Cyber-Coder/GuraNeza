@@ -11,6 +11,7 @@ export default [
       '**/coverage/**',
       '**/.husky/**',
       'postman/**',
+      '.snapshot-run/**',
     ],
   },
   js.configs.recommended,
