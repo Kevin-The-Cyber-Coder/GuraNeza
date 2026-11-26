@@ -11,6 +11,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const redirect = params.get('redirect') || '/';
+  const activated = params.get('activated') === '1';
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -53,6 +54,12 @@ const Login = () => {
           <span className="eyebrow">Sign in</span>
           <h1>Welcome back</h1>
           <p className="auth-subtitle">Enter your details to access your account.</p>
+
+          {activated && (
+            <div style={{ marginBottom: 18, padding: '12px 14px', borderRadius: 10, background: '#e8f5ef', color: '#0b6b4f', fontSize: '.84rem', fontWeight: 600 }}>
+              Your seller account is active. Sign in to continue.
+            </div>
+          )}
 
           <form onSubmit={submit} className="auth-form">
             <label className="field"><span>Email address</span>
