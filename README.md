@@ -82,14 +82,33 @@ GuraNeza ("buy well" in Kinyarwanda) is a full-stack commerce platform built for
 
 ## Screenshots
 
-Real screenshots should be captured from a running instance and placed in [`docs/screenshots/`](docs/screenshots/). No fabricated screenshots are included.
+> Captured from a local development build (headless Chrome). Data-dependent views may appear empty without a running API/database.
 
-| Preview | Preview |
+| Homepage | Shop |
 |---|---|
-| _Add `docs/screenshots/homepage.png`_ | _Add `docs/screenshots/shop.png`_ |
-| _Add `docs/screenshots/login.png`_ | _Add `docs/screenshots/admin-dashboard.png`_ |
+| ![Homepage](docs/screenshots/homepage.png) | ![Shop](docs/screenshots/shop.png) |
 
-See [docs/screenshots/README.md](docs/screenshots/README.md) for capture instructions and environment limitations.
+| Product Detail | Cart |
+|---|---|
+| ![Product Detail](docs/screenshots/product-detail.png) | ![Cart](docs/screenshots/cart.png) |
+
+| Login | Register |
+|---|---|
+| ![Login](docs/screenshots/login.png) | ![Register](docs/screenshots/register.png) |
+
+| Become a Seller | Contact |
+|---|---|
+| ![Become a Seller](docs/screenshots/become-seller.png) | ![Contact](docs/screenshots/contact.png) |
+
+| Track Order | Admin Dashboard |
+|---|---|
+| ![Track Order](docs/screenshots/track-order.png) | ![Admin Dashboard](docs/screenshots/admin-dashboard.png) |
+
+| Mobile Home |
+|---|
+| ![Mobile Home](docs/screenshots/mobile-home.png) |
+
+More capture guidance: [docs/screenshots/README.md](docs/screenshots/README.md).
 
 ## Tech Stack
 
