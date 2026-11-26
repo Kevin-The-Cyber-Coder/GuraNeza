@@ -89,6 +89,7 @@ export const productsAPI = {
 export const ordersAPI = {
   create: (data) => api.post('/orders', data),
   mine: () => api.get('/orders/my-orders'),
+  sellerMine: () => api.get('/orders/seller/mine'),
   track: (data) => api.post('/orders/track', data),
   all: (params = {}) => {
     const query = new URLSearchParams(
@@ -178,6 +179,23 @@ export const shopsAPI = {
     const form = new FormData();
     form.append('cover', file);
     return request('/shops/me/cover', { method: 'POST', body: form });
+  },
+};
+
+export const adminAPI = {
+  users: (params = {}) => {
+    const query = new URLSearchParams(Object.entries(params).reduce((a, [k, v]) => { if (v) a[k] = v; return a; }, {})).toString();
+    return api.get(`/admin/users${query ? `?${query}` : ''}`);
+  },
+  updateUserStatus: (id, status) => api.patch(`/admin/users/${id}/status`, { status }),
+  shops: (params = {}) => {
+    const query = new URLSearchParams(Object.entries(params).reduce((a, [k, v]) => { if (v) a[k] = v; return a; }, {})).toString();
+    return api.get(`/admin/shops${query ? `?${query}` : ''}`);
+  },
+  updateShopStatus: (id, status) => api.patch(`/admin/shops/${id}/status`, { status }),
+  auditLogs: (params = {}) => {
+    const query = new URLSearchParams(Object.entries(params).reduce((a, [k, v]) => { if (v) a[k] = v; return a; }, {})).toString();
+    return api.get(`/admin/audit-logs${query ? `?${query}` : ''}`);
   },
 };
 

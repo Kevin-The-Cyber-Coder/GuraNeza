@@ -1,13 +1,58 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Store, Package, LogOut, Menu, X, ExternalLink } from 'lucide-react';
+import {
+  LayoutDashboard, Store, Package, PlusSquare, Boxes, ShoppingCart, BarChart3, DollarSign,
+  Wallet, Users, Star, Megaphone, Ticket, MessageSquare, Bell, UserCog, Settings, User, LifeBuoy,
+  LogOut, Menu, X, ExternalLink,
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Logo from '../../components/Logo';
 
-const navItems = [
-  { to: '/seller', label: 'Overview', icon: LayoutDashboard, end: true },
-  { to: '/seller/shop', label: 'My Shop', icon: Store },
-  { to: '/seller/products', label: 'Products', icon: Package },
+const navSections = [
+  {
+    label: 'OVERVIEW',
+    items: [
+      { to: '/seller', label: 'Overview', icon: LayoutDashboard, end: true },
+      { to: '/seller/analytics', label: 'Sales Analytics', icon: BarChart3 },
+    ],
+  },
+  {
+    label: 'CATALOG',
+    items: [
+      { to: '/seller/shop', label: 'My Shop', icon: Store },
+      { to: '/seller/products', label: 'Products', icon: Package },
+      { to: '/seller/products/new', label: 'Add Product', icon: PlusSquare },
+      { to: '/seller/inventory', label: 'Inventory', icon: Boxes },
+    ],
+  },
+  {
+    label: 'SALES',
+    items: [
+      { to: '/seller/orders', label: 'Orders', icon: ShoppingCart },
+      { to: '/seller/earnings', label: 'Earnings', icon: DollarSign },
+      { to: '/seller/payouts', label: 'Payouts', icon: Wallet },
+      { to: '/seller/customers', label: 'Customers', icon: Users },
+      { to: '/seller/reviews', label: 'Reviews', icon: Star },
+    ],
+  },
+  {
+    label: 'GROWTH',
+    items: [
+      { to: '/seller/promotions', label: 'Promotions', icon: Megaphone },
+      { to: '/seller/coupons', label: 'Coupons', icon: Ticket },
+      { to: '/seller/inquiries', label: 'Inquiries', icon: MessageSquare },
+      { to: '/seller/notifications', label: 'Notifications', icon: Bell },
+    ],
+  },
+  {
+    label: 'ACCOUNT',
+    items: [
+      { to: '/seller/staff', label: 'Staff', icon: UserCog },
+      { to: '/seller/settings', label: 'Shop Settings', icon: Settings },
+      { to: '/seller/profile', label: 'Profile', icon: User },
+      { to: '/seller/support', label: 'Support', icon: LifeBuoy },
+    ],
+  },
 ];
 
 const SellerLayout = ({ children }) => {
@@ -15,10 +60,7 @@ const SellerLayout = ({ children }) => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  const handleLogout = () => { logout(); navigate('/login'); };
 
   return (
     <div className="admin-layout">
@@ -28,21 +70,25 @@ const SellerLayout = ({ children }) => {
           <button className="admin-sidebar__close" onClick={() => setSidebarOpen(false)}><X size={20} /></button>
         </div>
 
-        <div className="admin-sidebar__section">SELLER</div>
-        <nav className="admin-nav">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => (isActive ? 'active' : '')}>
-                <Icon size={19} /> {item.label}
-              </NavLink>
-            );
-          })}
-        </nav>
+        {navSections.map((section) => (
+          <div key={section.label}>
+            <div className="admin-sidebar__section">{section.label}</div>
+            <nav className="admin-nav">
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => (isActive ? 'active' : '')} onClick={() => setSidebarOpen(false)}>
+                    <Icon size={18} /> {item.label}
+                  </NavLink>
+                );
+              })}
+            </nav>
+          </div>
+        ))}
 
         <div className="admin-sidebar__section">STOREFRONT</div>
         <nav className="admin-nav">
-          <Link to="/"><ExternalLink size={19} /> View website</Link>
+          <Link to="/"><ExternalLink size={18} /> View website</Link>
         </nav>
 
         <div className="admin-sidebar__bottom">

@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { Breadcrumbs, EmptyState, ErrorState, Loader, StatusBadge } from '../components/Common';
 import { formatDate, formatRWF, getImage } from '../utils/helpers';
 
-const MyOrders = () => {
+const MyOrders = ({ embedded = false }) => {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,11 +20,11 @@ const MyOrders = () => {
       .finally(() => setLoading(false));
   }, [isAuthenticated]);
 
-  if (!authLoading && !isAuthenticated) return <Navigate to="/login?redirect=/my-orders" replace />;
+  if (!authLoading && !isAuthenticated) return <Navigate to={embedded ? '/login?redirect=/account/orders' : '/login?redirect=/my-orders'} replace />;
 
-  return (
-    <div className="container page-section">
-      <Breadcrumbs items={[{ label: 'My Orders' }]} />
+  const content = (
+    <>
+      {!embedded && <Breadcrumbs items={[{ label: 'My Orders' }]} />}
       <div className="page-title-row">
         <div><span className="eyebrow">Your shopping journey</span><h1>My orders</h1><p>Track everything you have bought on GuraNeza.</p></div>
         <Link to="/shop" className="btn btn--outline btn--sm"><ShoppingBag size={15} /> Shop more</Link>
@@ -61,8 +61,10 @@ const MyOrders = () => {
           ))}
         </div>
       )}
-    </div>
+    </>
   );
+
+  return embedded ? content : <div className="container page-section">{content}</div>;
 };
 
 export default MyOrders;

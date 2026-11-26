@@ -639,7 +639,7 @@ small { font-size: 0.78rem; }
 
 /* ---------- Admin layout ---------- */
 .admin-layout { display: flex; min-height: 100vh; background: #f5f8f6; }
-.admin-sidebar { width: 250px; background: #0a1f18; color: #c3d5cc; display: flex; flex-direction: column; flex-shrink: 0; position: sticky; top: 0; height: 100vh; }
+.admin-sidebar { width: 250px; background: #0a1f18; color: #c3d5cc; display: flex; flex-direction: column; flex-shrink: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; overscroll-behavior: contain; }
 .admin-sidebar__brand { padding: 22px 20px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid rgba(255,255,255,.08); }
 .admin-sidebar__brand .brand { width: 176px; height: 42px; }
 .admin-sidebar__close { display: none; background: none; border: 0; color: #fff; }

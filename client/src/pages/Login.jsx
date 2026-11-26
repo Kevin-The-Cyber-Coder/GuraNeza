@@ -1,22 +1,58 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
-import { Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, ShieldCheck, Store, User, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Logo from '../components/Logo';
 
+const ROLE_CONFIG = {
+  customer: {
+    label: 'Customer',
+    icon: User,
+    title: 'Customer sign in',
+    subtitle: 'Sign in to track orders, manage your profile, and shop securely.',
+    redirect: '/account',
+    registerPath: '/register',
+    registerLabel: 'Create a customer account',
+  },
+  seller: {
+    label: 'Seller',
+    icon: Store,
+    title: 'Seller sign in',
+    subtitle: 'Sign in to manage your shop, products, and orders.',
+    redirect: '/seller',
+    registerPath: '/become-a-seller',
+    registerLabel: 'Apply to become a seller',
+  },
+  admin: {
+    label: 'Admin',
+    icon: Shield,
+    title: 'Admin sign in',
+    subtitle: 'Authorized administrators only. All actions are audited.',
+    redirect: '/admin',
+    registerPath: null,
+    registerLabel: null,
+  },
+};
+
 const Login = () => {
-  const { login, isAuthenticated, loading: authLoading } = useAuth();
+  const { login, isAuthenticated, loading: authLoading, isAdmin, isSeller, isCustomer } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const redirect = params.get('redirect') || '/';
+  const requestedAs = (params.get('as') || 'customer').toLowerCase();
+  const roleKey = ROLE_CONFIG[requestedAs] ? requestedAs : 'customer';
+  const cfg = ROLE_CONFIG[roleKey];
+  const redirect = params.get('redirect') || '';
   const activated = params.get('activated') === '1';
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  if (!authLoading && isAuthenticated) return <Navigate to={redirect} replace />;
+  if (!authLoading && isAuthenticated) {
+    const fallback = isAdmin ? '/admin' : isSeller ? '/seller' : isCustomer ? '/account' : '/';
+    return <Navigate to={redirect || fallback} replace />;
+  }
 
   const submit = async (e) => {
     e.preventDefault();
@@ -25,17 +61,20 @@ const Login = () => {
       const data = await login(form);
       toast(data.message || 'Welcome back!');
       const role = data.user.role;
-      const isAdmin = role === 'admin' || role === 'SUPER_ADMIN';
-      const isSeller = role === 'seller' || role === 'SELLER';
+      const userIsAdmin = role === 'admin' || role === 'SUPER_ADMIN';
+      const userIsSeller = role === 'seller' || role === 'SELLER';
+      const userIsCustomer = role === 'customer' || role === 'CUSTOMER';
       const destination = data.user.mustChangePassword
         ? '/change-password'
-        : redirect !== '/'
+        : redirect
           ? redirect
-          : isAdmin
+          : userIsAdmin
             ? '/admin'
-            : isSeller
+            : userIsSeller
               ? '/seller'
-              : '/';
+              : userIsCustomer
+                ? '/account'
+                : '/';
       navigate(destination, { replace: true });
     } catch (err) {
       toast(err.message || 'Login failed', 'error');
@@ -44,17 +83,19 @@ const Login = () => {
     }
   };
 
+  const Icon = cfg.icon;
+
   return (
     <div className="auth-page">
       <div className="auth-visual">
         <Logo wide />
         <div className="auth-visual__content">
-          <span className="eyebrow eyebrow--light"><Sparkles size={14} /> Welcome back</span>
-          <h2>Your next favourite thing is waiting.</h2>
-          <p>Sign in to track your orders, save your details and enjoy a faster checkout every time.</p>
+          <span className="eyebrow eyebrow--light"><Icon size={14} /> {cfg.label} portal</span>
+          <h2>{cfg.title}</h2>
+          <p>{cfg.subtitle}</p>
           <div className="auth-visual__features">
             <span><ShieldCheck size={17} /> Secure & private</span>
-            <span>🇷🇼 Proudly Rwandan</span>
+            <span>Role-based access enforced on backend</span>
           </div>
         </div>
         <div className="auth-visual__pattern" />
@@ -63,13 +104,24 @@ const Login = () => {
       <div className="auth-panel">
         <div className="auth-form-wrap">
           <Link to="/" className="auth-back">← Back to shop</Link>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap' }}>
+            {Object.entries(ROLE_CONFIG).map(([key, value]) => (
+              <Link
+                key={key}
+                to={`/login?as=${key}${redirect ? `&redirect=${encodeURIComponent(redirect)}` : ''}`}
+                className={`btn btn--sm ${key === roleKey ? 'btn--primary' : 'btn--outline'}`}
+              >
+                {value.label}
+              </Link>
+            ))}
+          </div>
           <span className="eyebrow">Sign in</span>
-          <h1>Welcome back</h1>
-          <p className="auth-subtitle">Enter your details to access your account.</p>
+          <h1>{cfg.title}</h1>
+          <p className="auth-subtitle">{cfg.subtitle}</p>
 
           {activated && (
             <div style={{ marginBottom: 18, padding: '12px 14px', borderRadius: 10, background: '#e8f5ef', color: '#0b6b4f', fontSize: '.84rem', fontWeight: 600 }}>
-              Your seller account is active. Sign in to continue.
+              Your account is active. Sign in to continue.
             </div>
           )}
 
@@ -88,13 +140,16 @@ const Login = () => {
             </button>
           </form>
 
-          <div className="auth-demo-hint">
-            <strong>Demo accounts</strong>
-            <span>Admin: admin@guraneza.rw / Admin@123</span>
-            <span>Customer: demo@guraneza.rw / Demo@123</span>
-          </div>
+          {roleKey !== 'admin' && (
+            <div className="auth-demo-hint">
+              <strong>Portal access</strong>
+              {roleKey === 'customer' && <span>Customers can create an account below. Sellers must be approved before activation.</span>}
+              {roleKey === 'seller' && <span>Seller accounts are created after admin approval and activation. Use your approved seller credentials.</span>}
+            </div>
+          )}
 
-          <p className="auth-switch">New to GuraNeza? <Link to="/register">Create an account</Link></p>
+          {cfg.registerPath && <p className="auth-switch">{roleKey === 'seller' ? 'Want to sell on GuraNeza? ' : 'New to GuraNeza? '}<Link to={cfg.registerPath}>{cfg.registerLabel}</Link></p>}
+          {roleKey === 'admin' && <p className="auth-switch">Not an admin? <Link to="/login?as=customer">Go to customer login</Link></p>}
         </div>
       </div>
     </div>

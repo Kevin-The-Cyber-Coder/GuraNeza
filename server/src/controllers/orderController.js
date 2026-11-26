@@ -216,3 +216,37 @@ export const deleteOrder = asyncHandler(async (req, res) => {
   await order.deleteOne();
   res.json({ success: true, message: 'Order deleted' });
 });
+
+// @desc    Get orders containing products owned by the logged-in seller
+// @route   GET /api/orders/seller/mine
+// @access  Seller
+export const getSellerOrders = asyncHandler(async (req, res) => {
+  const sellerProducts = await Product.find({ seller: req.user._id }).select('_id').lean();
+  const productIds = sellerProducts.map((p) => p._id);
+  if (productIds.length === 0) return res.json({ success: true, orders: [] });
+
+  const orders = await Order.find({ 'items.product': { $in: productIds } })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  // Limit to seller's own items and hide other sellers' line items; keep customer info necessary for fulfillment.
+  const sanitized = orders.map((o) => {
+    const items = o.items.filter((it) => productIds.some((id) => String(id) === String(it.product)));
+    const subtotal = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
+    return {
+      _id: o._id,
+      orderNumber: o.orderNumber,
+      status: o.status,
+      paymentStatus: o.paymentStatus,
+      paymentMethod: o.paymentMethod,
+      createdAt: o.createdAt,
+      customer: { name: o.customer?.name, phone: o.customer?.phone, email: o.customer?.email },
+      shipping: o.shipping,
+      items,
+      sellerSubtotal: subtotal,
+      timeline: o.timeline,
+    };
+  });
+
+  res.json({ success: true, orders: sanitized });
+});
