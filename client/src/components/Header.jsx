@@ -19,6 +19,7 @@ import Logo from './Logo';
 const links = [
   { to: '/', label: 'Home', end: true },
   { to: '/shop', label: 'Shop' },
+  { to: '/become-a-seller', label: 'Become a Seller' },
   { to: '/track-order', label: 'Track Order' },
   { to: '/contact', label: 'Contact' },
 ];

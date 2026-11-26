@@ -2,7 +2,7 @@ import { isProd } from '../config/env.js';
 
 /** Centralised error handler for consistent API error responses. */
 const errorHandler = (err, _req, res, _next) => {
-  let code = res.statusCode && res.statusCode !== 200 ? res.statusCode : 500;
+  let code = err.statusCode || err.status || (res.statusCode && res.statusCode !== 200 ? res.statusCode : 500);
   let message = err.message || 'Something went wrong';
   let errors;
 
