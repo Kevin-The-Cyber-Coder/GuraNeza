@@ -2,7 +2,7 @@
 
 This folder contains the API test artifacts for the GuraNeza MERN project.
 
-> **Note:** I could not sign in to a personal Postman account, so the requests below were executed directly against the live backend (`https://guraneza-api.onrender.com`) and then packaged as a Postman collection with assertions. Your teacher can import the collection into Postman and see every request, response and PASS/FAIL test result.
+> **Note:** I could not sign in to a personal Postman account, so the requests below were executed directly against the live backend (`http://localhost:5000`) and then packaged as a Postman collection with assertions. Your teacher can import the collection into Postman and see every request, response and PASS/FAIL test result.
 
 ## Files
 
@@ -25,7 +25,7 @@ Alternatively, open `api-test-report.html` in a browser — it shows the live re
 
 ## Live test run — 18 Nov 2026 (UTC)
 
-Base URL: `https://guraneza-api.onrender.com`
+Base URL: `http://localhost:5000`
 
 | # | Request | Expected | Actual | Key response |
 |---|---|---|---|---|
@@ -65,4 +65,4 @@ The collection also contains register, create/update/delete product, order and c
 - JWT auth works: login issues a token, protected routes accept it, and anonymous requests are rejected with `401`.
 - Role-based admin routes (dashboard, all orders, all contacts) work with an admin token.
 - Order tracking correctly returns `404` for an unknown order number/email pair.
-- The hosted frontend and hosted backend are connected end-to-end: the storefront fetches these same products from `https://guraneza-api.onrender.com/api`.
+- The hosted frontend and hosted backend are connected end-to-end: the storefront fetches these same products from `http://localhost:5000/api`.

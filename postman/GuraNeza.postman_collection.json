@@ -2,13 +2,13 @@
   "info": {
     "_postman_id": "7f1b9c42-1d64-4e4a-9d8e-guraneza001",
     "name": "GuraNeza API — Lecturer Demo",
-    "description": "Live REST API tests for GuraNeza (MERN e-commerce, Kigali).\nBase URL: https://guraneza-api.onrender.com\n\nHOW TO RUN: select the \"GuraNeza Live\" environment, then click Run.\nThe Login request automatically stores the JWT in the \"token\" variable, so all protected requests work afterwards.\n\nRequests marked \"⚠ WRITES DATA\" create/modify records — run those only against a test database.",
+    "description": "Live REST API tests for GuraNeza (MERN e-commerce, Kigali).\nBase URL: http://localhost:5000\n\nHOW TO RUN: select the \"GuraNeza Live\" environment, then click Run.\nThe Login request automatically stores the JWT in the \"token\" variable, so all protected requests work afterwards.\n\nRequests marked \"⚠ WRITES DATA\" create/modify records — run those only against a test database.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "baseUrl",
-      "value": "https://guraneza-api.onrender.com",
+      "value": "http://localhost:5000",
       "type": "string"
     },
     {
