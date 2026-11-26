@@ -61,6 +61,15 @@ export const productsAPI = {
     ).toString();
     return api.get(`/products${query ? `?${query}` : ''}`);
   },
+  mine: (params = {}) => {
+    const query = new URLSearchParams(
+      Object.entries(params).reduce((acc, [k, v]) => {
+        if (v !== undefined && v !== null && v !== '') acc[k] = v;
+        return acc;
+      }, {})
+    ).toString();
+    return api.get(`/products/mine${query ? `?${query}` : ''}`);
+  },
   get: (id) => api.get(`/products/${id}`),
   meta: () => api.get('/products/meta'),
   topSelling: () => api.get('/products/top-selling'),
@@ -68,6 +77,12 @@ export const productsAPI = {
   update: (id, data) => api.put(`/products/${id}`, data),
   delete: (id) => api.delete(`/products/${id}`),
   bulkDelete: (ids) => api.post('/products/bulk-delete', { ids }),
+  uploadImages: (id, files) => {
+    const form = new FormData();
+    [...files].forEach((file) => form.append('images', file));
+    return request(`/products/${id}/images`, { method: 'POST', body: form });
+  },
+  removeImage: (id, imageUrl) => api.post(`/products/${id}/images/remove`, { imageUrl }),
 };
 
 // ---- Orders ----

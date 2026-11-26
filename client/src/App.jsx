@@ -31,6 +31,7 @@ import AdminSellerApplications from './pages/admin/AdminSellerApplications';
 
 import SellerDashboard from './pages/seller/SellerDashboard';
 import SellerShop from './pages/seller/SellerShop';
+import SellerProducts from './pages/seller/SellerProducts';
 
 const StoreLayout = ({ children }) => (
   <>
@@ -75,6 +76,7 @@ const App = () => (
       <Route element={<SellerRoute />}>
         <Route path="/seller" element={<SellerDashboard />} />
         <Route path="/seller/shop" element={<SellerShop />} />
+        <Route path="/seller/products" element={<SellerProducts />} />
       </Route>
 
       <Route path="*" element={<StoreLayout><NotFound /></StoreLayout>} />

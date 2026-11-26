@@ -88,6 +88,24 @@ const productSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    shop: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Shop',
+      default: null,
+      index: true,
+    },
+    seller: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+      index: true,
+    },
+    status: {
+      type: String,
+      enum: ['draft', 'published', 'archived'],
+      default: 'published',
+      index: true,
+    },
   },
   { timestamps: true }
 );

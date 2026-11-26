@@ -58,6 +58,9 @@ const statusColorMap = {
   active: 'success',
   inactive: 'muted',
   suspended: 'danger',
+  published: 'success',
+  draft: 'warning',
+  archived: 'muted',
 };
 
 export const ConfirmDialog = ({
