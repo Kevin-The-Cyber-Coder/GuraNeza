@@ -62,6 +62,10 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  const loginWithToken = (nextToken, nextUser) => {
+    persist(nextUser, nextToken);
+  };
+
   const logout = () => persist(null, null);
 
   const updateUser = (updated) => {
@@ -76,8 +80,10 @@ export const AuthProvider = ({ children }) => {
       loading,
       isAuthenticated: !!user && !!token,
       isAdmin: user?.role === 'admin',
+      isSeller: user?.role === 'seller',
       login,
       register,
+      loginWithToken,
       logout,
       updateUser,
     }),

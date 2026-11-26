@@ -38,6 +38,7 @@ export const api = {
   get: (url) => request(url),
   post: (url, body) => request(url, { method: 'POST', body: JSON.stringify(body) }),
   put: (url, body) => request(url, { method: 'PUT', body: JSON.stringify(body) }),
+  patch: (url, body) => request(url, { method: 'PATCH', body: JSON.stringify(body) }),
   delete: (url) => request(url, { method: 'DELETE' }),
 };
 
@@ -109,6 +110,30 @@ export const contactsAPI = {
 export const dashboardAPI = {
   stats: () => api.get('/dashboard/stats'),
   activity: () => api.get('/dashboard/activity'),
+};
+
+// ---- Seller applications ----
+export const sellerApplicationsAPI = {
+  submit: (data) => api.post('/seller-applications', data),
+  checkStatus: (data) => api.post('/seller-applications/status', data),
+  all: (params = {}) => {
+    const query = new URLSearchParams(
+      Object.entries(params).reduce((acc, [k, v]) => {
+        if (v !== undefined && v !== null && v !== '' && v !== 'all') acc[k] = v;
+        return acc;
+      }, {})
+    ).toString();
+    return api.get(`/seller-applications${query ? `?${query}` : ''}`);
+  },
+  get: (id) => api.get(`/seller-applications/${id}`),
+  approve: (id) => api.patch(`/seller-applications/${id}/approve`),
+  reject: (id, reason) => api.patch(`/seller-applications/${id}/reject`, { reason }),
+  resendInvitation: (id) => api.post(`/seller-applications/${id}/resend-invitation`),
+};
+
+export const sellerInvitationsAPI = {
+  validate: (token) => api.get(`/seller-invitations/validate?token=${encodeURIComponent(token)}`),
+  activate: (data) => api.post('/seller-invitations/activate', data),
 };
 
 export default api;
