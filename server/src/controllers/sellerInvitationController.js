@@ -9,6 +9,7 @@ import { maskEmail } from '../utils/tokens.js';
 import { recordAudit } from '../services/audit.js';
 import { sendEmail } from '../services/email.js';
 import { sellerWelcomeEmail } from '../services/emailTemplates.js';
+import { ensureShopForSeller } from '../services/shops.js';
 import {
   findInvitationByToken,
   getInvitationState,
@@ -127,6 +128,8 @@ export const activateSeller = asyncHandler(async (req, res) => {
 
     return seller;
   });
+
+  await ensureShopForSeller(user);
 
   await sendEmail(sellerWelcomeEmail(user));
 

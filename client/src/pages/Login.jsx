@@ -24,7 +24,15 @@ const Login = () => {
     try {
       const data = await login(form);
       toast(data.message || 'Welcome back!');
-      navigate(data.user.role === 'admin' && redirect === '/' ? '/admin' : redirect, { replace: true });
+      const destination =
+        redirect !== '/'
+          ? redirect
+          : data.user.role === 'admin'
+            ? '/admin'
+            : data.user.role === 'seller'
+              ? '/seller'
+              : '/';
+      navigate(destination, { replace: true });
     } catch (err) {
       toast(err.message || 'Login failed', 'error');
     } finally {

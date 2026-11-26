@@ -136,4 +136,19 @@ export const sellerInvitationsAPI = {
   activate: (data) => api.post('/seller-invitations/activate', data),
 };
 
+export const shopsAPI = {
+  mine: () => api.get('/shops/me'),
+  updateMine: (data) => api.put('/shops/me', data),
+  uploadLogo: (file) => {
+    const form = new FormData();
+    form.append('logo', file);
+    return request('/shops/me/logo', { method: 'POST', body: form });
+  },
+  uploadCover: (file) => {
+    const form = new FormData();
+    form.append('cover', file);
+    return request('/shops/me/cover', { method: 'POST', body: form });
+  },
+};
+
 export default api;
