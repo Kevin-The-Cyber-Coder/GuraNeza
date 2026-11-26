@@ -1,7 +1,6 @@
 import env from '../config/env.js';
 
 const BRAND = '#0b6b4f';
-const BRAND_DARK = '#084d39';
 const INK = '#10251f';
 const MUTED = '#6b7d76';
 const LINE = '#e4eae6';
