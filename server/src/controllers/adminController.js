@@ -10,7 +10,11 @@ const safeRegex = (v) => new RegExp(String(v).replace(/[.*+?^${}()|[\]\\]/g, '\\
 export const listUsers = asyncHandler(async (req, res) => {
   const { role, search, status, page = 1, limit = 20 } = req.query;
   const filter = {};
-  if (role) filter.role = normalizeRole(role);
+  if (role) {
+    const normalized = normalizeRole(role);
+    const legacy = { SUPER_ADMIN: ['SUPER_ADMIN', 'admin'], SELLER: ['SELLER', 'seller'], CUSTOMER: ['CUSTOMER', 'customer', 'user'] }[normalized] || [normalized];
+    filter.role = { $in: legacy };
+  }
   if (status) filter.accountStatus = status;
   if (search) {
     const rx = safeRegex(search);
