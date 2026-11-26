@@ -109,6 +109,7 @@ export const activateSeller = asyncHandler(async (req, res) => {
 
     seller.password = password;
     seller.isActive = true;
+    seller.mustChangePassword = false;
     seller.emailVerifiedAt = new Date();
     await (session ? seller.save({ session }) : seller.save());
 

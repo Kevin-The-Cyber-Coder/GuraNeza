@@ -24,8 +24,9 @@ const Login = () => {
     try {
       const data = await login(form);
       toast(data.message || 'Welcome back!');
-      const destination =
-        redirect !== '/'
+      const destination = data.user.mustChangePassword
+        ? '/change-password'
+        : redirect !== '/'
           ? redirect
           : data.user.role === 'admin'
             ? '/admin'

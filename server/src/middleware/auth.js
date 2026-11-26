@@ -31,6 +31,17 @@ export const protect = async (req, res, next) => {
     }
 
     req.user = user;
+    if (user.mustChangePassword) {
+      const allowed = ['/api/auth/profile', '/api/auth/me', '/api/auth/logout'];
+      const path = (req.originalUrl || '').split('?')[0];
+      if (!allowed.includes(path)) {
+        return res.status(403).json({
+          success: false,
+          code: 'PASSWORD_CHANGE_REQUIRED',
+          message: 'You must change your temporary password before continuing.',
+        });
+      }
+    }
     return next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
