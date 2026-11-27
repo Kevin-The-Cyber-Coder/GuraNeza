@@ -152,21 +152,47 @@ export const getAllOrders = asyncHandler(async (req, res) => {
 
 // @desc    Get a single order by id
 // @route   GET /api/orders/:id
-// @access  Admin or the owner
+// @access  Admin, owner, or seller with items in the order
 export const getOrderById = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id).populate('user', 'name email phone').lean();
   if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
 
   const isOwner = order.user && String(order.user._id || order.user) === String(req.user?._id);
-  if (!hasRole(req.user, ROLES.SUPER_ADMIN) && !isOwner) {
-    return res.status(403).json({ success: false, message: 'Not authorized to view this order' });
+  if (hasRole(req.user, ROLES.SUPER_ADMIN) || isOwner) {
+    return res.json({ success: true, order });
   }
-  res.json({ success: true, order });
+
+  if (hasRole(req.user, ROLES.SELLER)) {
+    const sellerProducts = await Product.find({ seller: req.user._id }).select('_id').lean();
+    const ids = new Set(sellerProducts.map((p) => String(p._id)));
+    const items = order.items.filter((it) => ids.has(String(it.product)));
+    if (items.length > 0) {
+      const sellerSubtotal = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
+      return res.json({
+        success: true,
+        order: {
+          _id: order._id,
+          orderNumber: order.orderNumber,
+          status: order.status,
+          paymentStatus: order.paymentStatus,
+          paymentMethod: order.paymentMethod,
+          createdAt: order.createdAt,
+          customer: { name: order.customer?.name, phone: order.customer?.phone, email: order.customer?.email },
+          shipping: order.shipping,
+          items,
+          sellerSubtotal,
+          timeline: order.timeline,
+        },
+      });
+    }
+  }
+
+  return res.status(403).json({ success: false, message: 'Not authorized to view this order' });
 });
 
-// @desc    Update the status of an order (admin)
+// @desc    Update the status of an order
 // @route   PUT /api/orders/:id/status
-// @access  Admin
+// @access  Admin, or seller for orders fully owned by them (limited statuses)
 export const updateOrderStatus = asyncHandler(async (req, res) => {
   const { status, note } = req.body;
   if (!VALID_STATUSES.includes(status)) {
@@ -176,11 +202,28 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
   if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
 
+  const isAdmin = hasRole(req.user, ROLES.SUPER_ADMIN);
+  if (!isAdmin) {
+    if (!hasRole(req.user, ROLES.SELLER)) {
+      return res.status(403).json({ success: false, message: 'Not authorized to update this order' });
+    }
+    const sellerAllowed = ['Processing', 'Shipped', 'Delivered'];
+    if (!sellerAllowed.includes(status)) {
+      return res.status(403).json({ success: false, message: 'Sellers can only update fulfillment status to Processing, Shipped, or Delivered' });
+    }
+    const sellerProducts = await Product.find({ seller: req.user._id }).select('_id').lean();
+    const ids = new Set(sellerProducts.map((p) => String(p._id)));
+    const ownsAll = order.items.every((it) => ids.has(String(it.product)));
+    if (!ownsAll) {
+      return res.status(403).json({ success: false, message: 'You can only update orders that contain only your products' });
+    }
+  }
+
   const previousStatus = order.status;
   order.status = status;
   order.timeline.push({ status, note: note || `Status updated to ${status}` });
 
-  // Restock items when an order is cancelled.
+  // Restock items when an order is cancelled (admin-only flow).
   if (status === 'Cancelled' && previousStatus !== 'Cancelled') {
     await Promise.all(
       order.items.map((item) =>

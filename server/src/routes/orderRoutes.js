@@ -9,7 +9,7 @@ import {
   deleteOrder,
   getSellerOrders,
 } from '../controllers/orderController.js';
-import { protect, adminOnly, sellerOnly } from '../middleware/auth.js';
+import { protect, adminOnly, sellerOnly, authorize } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -24,7 +24,7 @@ router.get('/seller/mine', protect, sellerOnly, getSellerOrders);
 // Admin
 router.get('/', protect, adminOnly, getAllOrders);
 router.get('/:id', protect, getOrderById);
-router.put('/:id/status', protect, adminOnly, updateOrderStatus);
+router.put('/:id/status', protect, authorize('admin', 'seller'), updateOrderStatus);
 router.delete('/:id', protect, adminOnly, deleteOrder);
 
 export default router;
