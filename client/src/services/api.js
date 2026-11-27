@@ -180,6 +180,8 @@ export const shopsAPI = {
     form.append('cover', file);
     return request('/shops/me/cover', { method: 'POST', body: form });
   },
+  analytics: () => api.get('/shops/me/analytics'),
+  customers: () => api.get('/shops/me/customers'),
 };
 
 export const adminAPI = {

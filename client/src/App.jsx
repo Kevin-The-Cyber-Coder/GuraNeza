@@ -45,6 +45,14 @@ import SellerDashboard from './pages/seller/SellerDashboard';
 import SellerShop from './pages/seller/SellerShop';
 import SellerProducts from './pages/seller/SellerProducts';
 import SellerOrders from './pages/seller/SellerOrders';
+import SellerAnalytics from './pages/seller/SellerAnalytics';
+import SellerInventory from './pages/seller/SellerInventory';
+import SellerOrderDetail from './pages/seller/SellerOrderDetail';
+import SellerCustomers from './pages/seller/SellerCustomers';
+import SellerNotifications from './pages/seller/SellerNotifications';
+import SellerProfile from './pages/seller/SellerProfile';
+import SellerSettings from './pages/seller/SellerSettings';
+import SellerAddProduct from './pages/seller/SellerAddProduct';
 
 import CustomerDashboard from './pages/customer/CustomerDashboard';
 import CustomerOrders from './pages/customer/CustomerOrders';
@@ -122,22 +130,22 @@ const App = () => (
         <Route path="/seller" element={<SellerDashboard />} />
         <Route path="/seller/shop" element={<SellerShop />} />
         <Route path="/seller/products" element={<SellerProducts />} />
-        <Route path="/seller/products/new" element={<SellerPlaceholder title="Add Product" description="Use the Products module to create products. A dedicated add-product flow can be added here." />} />
-        <Route path="/seller/inventory" element={<SellerPlaceholder title="Inventory" description="Inventory management will appear here when dedicated inventory workflows are enabled." />} />
+        <Route path="/seller/products/new" element={<SellerAddProduct />} />
+        <Route path="/seller/inventory" element={<SellerInventory />} />
         <Route path="/seller/orders" element={<SellerOrders />} />
-        <Route path="/seller/orders/:id" element={<SellerPlaceholder title="Order Details" description="Detailed seller order view will be added when per-order seller workflows are implemented. Current orders are visible in the Orders list." />} />
-        <Route path="/seller/analytics" element={<SellerPlaceholder title="Sales Analytics" description="Shop analytics will appear here when seller analytics APIs are implemented." />} />
+        <Route path="/seller/orders/:id" element={<SellerOrderDetail />} />
+        <Route path="/seller/analytics" element={<SellerAnalytics />} />
         <Route path="/seller/earnings" element={<SellerPlaceholder title="Earnings" description="Earnings reporting will appear here when financial reporting APIs are implemented." />} />
         <Route path="/seller/payouts" element={<SellerPlaceholder title="Payouts" description="Payout requests and history will appear here when payout APIs are implemented." />} />
-        <Route path="/seller/customers" element={<SellerPlaceholder title="Customers" description="Limited customer information related to your orders will appear here when seller order APIs are implemented." />} />
+        <Route path="/seller/customers" element={<SellerCustomers />} />
         <Route path="/seller/reviews" element={<SellerPlaceholder title="Reviews" description="Review responses will appear here when review APIs are implemented." />} />
         <Route path="/seller/promotions" element={<SellerPlaceholder title="Promotions" description="Shop promotions will appear here when promotion APIs are implemented." />} />
         <Route path="/seller/coupons" element={<SellerPlaceholder title="Coupons" description="Shop coupons will appear here when coupon APIs are implemented." />} />
         <Route path="/seller/inquiries" element={<SellerPlaceholder title="Customer Inquiries" description="Customer inquiry management will appear here when inquiry APIs are implemented." />} />
-        <Route path="/seller/notifications" element={<SellerPlaceholder title="Notifications" description="Seller notifications will appear here when seller notification views are enabled." />} />
+        <Route path="/seller/notifications" element={<SellerNotifications />} />
         <Route path="/seller/staff" element={<SellerPlaceholder title="Staff Management" description="Seller staff management will appear here if staff accounts are enabled." />} />
-        <Route path="/seller/settings" element={<SellerPlaceholder title="Shop Settings" description="Additional shop settings will appear here when settings APIs are implemented." />} />
-        <Route path="/seller/profile" element={<SellerPlaceholder title="Profile" description="Seller profile management will appear here when profile APIs are enabled." />} />
+        <Route path="/seller/settings" element={<SellerSettings />} />
+        <Route path="/seller/profile" element={<SellerProfile />} />
         <Route path="/seller/support" element={<SellerPlaceholder title="Support" description="Support tools will appear here when support workflows are implemented." />} />
       </Route>
 

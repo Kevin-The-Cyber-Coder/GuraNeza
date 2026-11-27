@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Plus, Pencil, Trash2, Search, X, ImagePlus } from 'lucide-react';
 import { productsAPI } from '../../services/api';
 import { CATEGORIES, formatRWF } from '../../utils/helpers';
@@ -21,6 +22,8 @@ const emptyProduct = {
 
 const SellerProducts = () => {
   const toast = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [meta, setMeta] = useState({ page: 1, pages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
@@ -55,6 +58,13 @@ const SellerProducts = () => {
     setForm(emptyProduct);
     setModalOpen(true);
   };
+
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      openCreate();
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const openEdit = (product) => {
     setEditing(product);

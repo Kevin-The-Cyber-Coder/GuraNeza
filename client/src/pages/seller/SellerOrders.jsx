@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ordersAPI } from '../../services/api';
 import { formatDate, formatRWF } from '../../utils/helpers';
 import { Loader } from '../../components/Common';
@@ -27,7 +28,7 @@ const SellerOrders = () => {
           <tbody>
             {orders.length === 0 ? <tr><td colSpan="6" style={{ padding: 24, color: 'var(--muted)' }}>No orders found for your products yet.</td></tr> : orders.map((o) => (
               <tr key={o._id}>
-                <td><strong>#{o.orderNumber}</strong></td>
+                <td><Link to={`/seller/orders/${o._id}`} style={{ fontWeight: 700, color: 'var(--primary)' }}>#{o.orderNumber}</Link></td>
                 <td>{o.customer?.name}<div style={{ fontSize: '.75rem', color: 'var(--muted)' }}>{o.customer?.phone}</div></td>
                 <td>{o.items.map((i) => `${i.name} x${i.quantity}`).join(', ')}</td>
                 <td>{formatRWF(o.sellerSubtotal || 0)}</td>
