@@ -36,6 +36,10 @@ import AdminShops from './pages/admin/AdminShops';
 import AdminCustomers from './pages/admin/AdminCustomers';
 import AdminAuditLogs from './pages/admin/AdminAuditLogs';
 import AdminNotifications from './pages/admin/AdminNotifications';
+import AdminSecurity from './pages/admin/AdminSecurity';
+import AdminCategories from './pages/admin/AdminCategories';
+import AdminSettings from './pages/admin/AdminSettings';
+import AdminAnalytics from './pages/admin/AdminAnalytics';
 
 import SellerDashboard from './pages/seller/SellerDashboard';
 import SellerShop from './pages/seller/SellerShop';
@@ -94,7 +98,7 @@ const App = () => (
         <Route path="/admin/shops" element={<AdminShops />} />
         <Route path="/admin/customers" element={<AdminCustomers />} />
         <Route path="/admin/products" element={<AdminProducts />} />
-        <Route path="/admin/categories" element={<AdminPlaceholder title="Categories" description="Marketplace category management will appear here when the category model and APIs are implemented." />} />
+        <Route path="/admin/categories" element={<AdminCategories />} />
         <Route path="/admin/orders" element={<AdminOrders />} />
         <Route path="/admin/payments" element={<AdminPlaceholder title="Payments" description="Payment monitoring and authorized financial workflows will appear here when payment records are implemented." />} />
         <Route path="/admin/commissions" element={<AdminPlaceholder title="Commissions" description="Commission policy configuration will appear here with auditable workflows." />} />
@@ -103,13 +107,13 @@ const App = () => (
         <Route path="/admin/coupons" element={<AdminPlaceholder title="Coupons and Promotions" description="Platform coupon and promotion management will appear here when promotion APIs are implemented." />} />
         <Route path="/admin/reviews" element={<AdminPlaceholder title="Reviews and Moderation" description="Review monitoring and moderation will appear here when review workflows are implemented." />} />
         <Route path="/admin/disputes" element={<AdminPlaceholder title="Disputes" description="Dispute handling workflows will appear here when dispute records are implemented." />} />
-        <Route path="/admin/analytics" element={<AdminPlaceholder title="Analytics" description="Marketplace analytics will appear here when reporting APIs are implemented." />} />
+        <Route path="/admin/analytics" element={<AdminAnalytics />} />
         <Route path="/admin/advertisements" element={<AdminPlaceholder title="Advertisements" description="Marketplace advertisement management will appear here when ad workflows are implemented." />} />
         <Route path="/admin/notifications" element={<AdminNotifications />} />
         <Route path="/admin/staff" element={<AdminPlaceholder title="Staff and Permissions" description="Staff and permission management will appear here if staff accounts are enabled. No staff accounts exist yet; no mock data is shown." />} />
         <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
-        <Route path="/admin/settings" element={<AdminPlaceholder title="Settings" description="Marketplace settings will appear here when configuration APIs are implemented." />} />
-        <Route path="/admin/security" element={<AdminPlaceholder title="Security Center" description="Security monitoring and event review will appear here when security event APIs are implemented." />} />
+        <Route path="/admin/settings" element={<AdminSettings />} />
+        <Route path="/admin/security" element={<AdminSecurity />} />
         <Route path="/admin/contacts" element={<AdminContacts />} />
       </Route>
 

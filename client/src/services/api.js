@@ -197,6 +197,10 @@ export const adminAPI = {
     const query = new URLSearchParams(Object.entries(params).reduce((a, [k, v]) => { if (v) a[k] = v; return a; }, {})).toString();
     return api.get(`/admin/audit-logs${query ? `?${query}` : ''}`);
   },
+  securityOverview: () => api.get('/admin/security-overview'),
+  categoriesOverview: () => api.get('/admin/categories-overview'),
+  platformSettings: () => api.get('/admin/settings'),
+  platformAnalytics: () => api.get('/admin/analytics'),
 };
 
 export default api;

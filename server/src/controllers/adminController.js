@@ -1,9 +1,12 @@
 import User from '../models/User.js';
 import Shop from '../models/Shop.js';
 import AuditLog from '../models/AuditLog.js';
+import Product from '../models/Product.js';
+import Order from '../models/Order.js';
 import { asyncHandler, httpError } from '../middleware/error.js';
 import { recordAudit } from '../services/audit.js';
 import { normalizeRole, ROLES } from '../config/rbac.js';
+import env from '../config/env.js';
 
 const safeRegex = (v) => new RegExp(String(v).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
 
@@ -105,4 +108,69 @@ export const listAuditLogs = asyncHandler(async (req, res) => {
     AuditLog.countDocuments(filter),
   ]);
   res.json({ success: true, logs, total, page: Number(page), pages: Math.ceil(total / lim) });
+});
+
+export const getSecurityOverview = asyncHandler(async (_req, res) => {
+  const [deniedCount, failureCount, recentEvents, suspendedUsers, suspendedShops] = await Promise.all([
+    AuditLog.countDocuments({ outcome: 'denied' }),
+    AuditLog.countDocuments({ outcome: 'failure' }),
+    AuditLog.find({ outcome: { $in: ['denied', 'failure'] } })
+      .populate('actor', 'name email role')
+      .sort({ createdAt: -1 })
+      .limit(25)
+      .lean(),
+    User.countDocuments({ accountStatus: { $in: ['suspended', 'disabled'] } }),
+    Shop.countDocuments({ status: { $in: ['suspended', 'inactive'] } }),
+  ]);
+  res.json({
+    success: true,
+    stats: { deniedCount, failureCount, suspendedUsers, suspendedShops },
+    recentEvents,
+  });
+});
+
+export const getCategoriesOverview = asyncHandler(async (_req, res) => {
+  const schemaCategories = Product.schema.path('category')?.enumValues || [];
+  const counts = await Product.aggregate([{ $group: { _id: '$category', products: { $sum: 1 } } }]);
+  const countMap = new Map(counts.map((c) => [c._id, c.products]));
+  const categories = schemaCategories.map((name) => ({ name, products: countMap.get(name) || 0 }));
+  res.json({ success: true, categories });
+});
+
+export const getPlatformSettings = asyncHandler(async (_req, res) => {
+  res.json({
+    success: true,
+    settings: {
+      nodeEnv: env.NODE_ENV,
+      clientUrl: env.CLIENT_URL,
+      appUrl: env.APP_URL,
+      jwtExpiresIn: env.JWT_EXPIRES_IN,
+      sellerInviteTtlHours: env.SELLER_INVITE_TTL_HOURS,
+      uploadMaxMb: env.UPLOAD_MAX_MB,
+      emailConfigured: !!env.RESEND_API_KEY,
+      cloudinaryConfigured: !!(env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_API_KEY),
+      corsOriginsConfigured: true,
+    },
+  });
+});
+
+export const getPlatformAnalytics = asyncHandler(async (_req, res) => {
+  const [usersByRole, shopsByStatus, productsByStatus, ordersByStatus, revenue] = await Promise.all([
+    User.aggregate([{ $group: { _id: '$role', count: { $sum: 1 } } }]),
+    Shop.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
+    Product.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
+    Order.aggregate([{ $group: { _id: '$status', count: { $sum: 1 }, total: { $sum: '$pricing.total' } } }]),
+    Order.aggregate([{ $match: { status: { $ne: 'Cancelled' } } }, { $group: { _id: null, revenue: { $sum: '$pricing.total' }, orders: { $sum: 1 } } }]),
+  ]);
+  res.json({
+    success: true,
+    analytics: {
+      usersByRole,
+      shopsByStatus,
+      productsByStatus,
+      ordersByStatus,
+      revenue: revenue[0]?.revenue || 0,
+      orders: revenue[0]?.orders || 0,
+    },
+  });
 });
